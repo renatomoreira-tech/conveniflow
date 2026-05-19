@@ -38,17 +38,21 @@ integração com banco de dados relacional e boas práticas de desenvolvimento.
 
 **Backend**
 
+```bash
 cd backend
 npm install
 cp .env.example .env
 npx prisma generate
 node server.js
+```
 
 **Frontend**
 
+```bash
 cd frontend
 npm install
 npm run dev
+```
 
 Acesse: `http://localhost:5173`
 
