@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── USUÁRIOS ───────────────────────────────────────────
+model User {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  email     String   @unique
+  senha     String
+  role      Role     @default(CAIXA)
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  sales     Sale[]
+}
+
+enum Role {
+  ADMIN
+  GERENTE
+  CAIXA
+}
+
+// ─── CATEGORIAS ─────────────────────────────────────────
+model Categoria {
+  id       Int       @id @default(autoincrement())
+  nome     String    @unique
+
+  produtos Product[]
+}
+
+// ─── FORNECEDORES ───────────────────────────────────────
+model Fornecedor {
+  id       Int       @id @default(autoincrement())
+  nome     String
+  telefone String?
+  email    String?
+
+  produtos Product[]
+}
+
+// ─── PRODUTOS ───────────────────────────────────────────
+model Product {
+  id             Int        @id @default(autoincrement())
+  nome           String
+  codigoBarras   String?    @unique
+  preco          Float
+  precoCusto     Float?
+  estoque        Int        @default(0)
+  estoqueMinimo  Int        @default(5)
+  ativo          Boolean    @default(true)
+
+  categoriaId    Int?
+  fornecedorId   Int?
+  categoria      Categoria?  @relation(fields: [categoriaId], references: [id])
+  fornecedor     Fornecedor? @relation(fields: [fornecedorId], references: [id])
+
+  itensVenda     ItemVenda[]
+}
+
+// ─── VENDAS ─────────────────────────────────────────────
+model Sale {
+  id            Int           @id @default(autoincrement())
+  data_venda    DateTime      @default(now())
+  valor_total   Float
+  desconto      Float         @default(0)
+  formaPagamento FormaPagamento @default(DINHEIRO)
+  status        StatusVenda   @default(CONCLUIDA)
+  troco         Float?
+
+  userId        Int
+  user          User          @relation(fields: [userId], references: [id])
+
+  itens         ItemVenda[]
+}
+
+enum FormaPagamento {
+  DINHEIRO
+  CARTAO_DEBITO
+  CARTAO_CREDITO
+  PIX
+}
+
+enum StatusVenda {
+  CONCLUIDA
+  CANCELADA
+  PENDENTE
+}
+
+// ─── ITENS DA VENDA ─────────────────────────────────────
+model ItemVenda {
+  id           Int     @id @default(autoincrement())
+  quantidade   Int
+  precoUnitario Float
+  subtotal     Float
+
+  saleId       Int
+  productId    Int
+  sale         Sale    @relation(fields: [saleId], references: [id])
+  product      Product @relation(fields: [productId], references: [id])
+}
+
+// ─── CAIXA ──────────────────────────────────────────────
+model Caixa {
+  id             Int       @id @default(autoincrement())
+  abertura       DateTime  @default(now())
+  fechamento     DateTime?
+  valorInicial   Float
+  valorFinal     Float?
+  status         StatusCaixa @default(ABERTO)
+}
+
+enum StatusCaixa {
+  ABERTO
+  FECHADO
+}
