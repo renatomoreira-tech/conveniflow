@@ -37,3 +37,26 @@ integração com banco de dados relacional e boas práticas de desenvolvimento.
 ## ▶️ Como executar
 
 **Backend**
+cd backend
+npm install
+cp .env.example .env
+npx prisma generate
+node server.js
+
+**Frontend**
+
+cd frontend
+npm install
+npm run dev
+
+Acesse: `http://localhost:5173`
+
+## 📌 Status
+
+Em desenvolvimento — funcionalidades de categorias,
+fornecedores e relatórios ainda em construção.
+
+## 📌 Autor
+
+Renato Moreira
+github.com/renatomoreira-tech
