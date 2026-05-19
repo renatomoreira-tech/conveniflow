@@ -37,6 +37,7 @@ integração com banco de dados relacional e boas práticas de desenvolvimento.
 ## ▶️ Como executar
 
 **Backend**
+
 cd backend
 npm install
 cp .env.example .env
