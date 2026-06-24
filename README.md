@@ -222,7 +222,7 @@ Acesse: `http://localhost:5173`
 **Renato Moreira**
 
 - GitHub: [@renatomoreira-tech](https://github.com/renatomoreira-tech)
-- LinkedIn: [Renato Moreira](https://www.linkedin.com/in/renato-moreira)
+- LinkedIn: [Renato Moreira](https://www.linkedin.com/in/renato-moreira-5836b8205/)
 
 ---
 
