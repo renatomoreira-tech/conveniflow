@@ -32,31 +32,31 @@ export default function Dashboard() {
             <p style={styles.cardDesc}>Gerencie o catálogo de produtos</p>
           </div>
 
-          <div style={styles.card}>
+          <div style={styles.card} onClick={() => navigate("/vendas")}>
             <span style={styles.icone}>💰</span>
             <h3 style={styles.cardTitulo}>Vendas</h3>
             <p style={styles.cardDesc}>Registre e acompanhe as vendas</p>
           </div>
 
-          <div style={styles.card}>
+          <div style={styles.card} onClick={() => navigate("/caixa")}>
             <span style={styles.icone}>📦</span>
-            <h3 style={styles.cardTitulo}>Estoque</h3>
-            <p style={styles.cardDesc}>Controle entradas e saídas</p>
+            <h3 style={styles.cardTitulo}>Caixa</h3>
+            <p style={styles.cardDesc}>Controle abertura e fechamento</p>
           </div>
 
-          <div style={styles.card}>
+          <div style={styles.card} onClick={() => navigate("/categorias")}>
             <span style={styles.icone}>🏷️</span>
             <h3 style={styles.cardTitulo}>Categorias</h3>
             <p style={styles.cardDesc}>Organize os produtos por categoria</p>
           </div>
 
-          <div style={styles.card}>
+          <div style={styles.card} onClick={() => navigate("/fornecedores")}>
             <span style={styles.icone}>🚚</span>
             <h3 style={styles.cardTitulo}>Fornecedores</h3>
             <p style={styles.cardDesc}>Gerencie seus fornecedores</p>
           </div>
 
-          <div style={styles.card}>
+          <div style={styles.card} onClick={() => navigate("/relatorios")}>
             <span style={styles.icone}>📊</span>
             <h3 style={styles.cardTitulo}>Relatórios</h3>
             <p style={styles.cardDesc}>Visualize o desempenho do negócio</p>
