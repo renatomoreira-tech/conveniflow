@@ -346,9 +346,6 @@ const styles = {
   caixaTexto: {
     fontSize: "14px",
     fontWeight: "600",
-    caixaTexto: {
-    fontSize: "14px",
-    fontWeight: "600",
     color: "#1a1a2e",
   },
   caixaInfo: {
@@ -368,4 +365,3 @@ const styles = {
     marginBottom: "8px",
     color: "#1a1a2e",
   },
-};
