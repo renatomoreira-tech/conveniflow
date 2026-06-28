@@ -1,9 +1,12 @@
+import { useAuth } from "../context/AuthContext";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 export default function Vendas() {
   const navigate = useNavigate();
+  const { usuario } = useAuth();
+  const role = usuario?.role;
   const [produtos, setProdutos] = useState([]);
   const [vendas, setVendas] = useState([]);
   const [carregando, setCarregando] = useState(true);
@@ -192,14 +195,15 @@ export default function Vendas() {
                     </span>
                   </td>
                   <td style={styles.td}>
-                    {venda.status === "CONCLUIDA" && (
-                      <button
-                        onClick={() => handleCancelarVenda(venda.id)}
-                        style={styles.botaoCancelar}
-                      >
-                        Cancelar
-                      </button>
-                    )}
+                    {venda.status === "CONCLUIDA" &&
+                      (role === "ADMIN" || role === "GERENTE") && (
+                        <button
+                          onClick={() => handleCancelarVenda(venda.id)}
+                          style={styles.botaoCancelar}
+                        >
+                          Cancelar
+                        </button>
+                      )}
                   </td>
                 </tr>
               ))

@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 export default function Dashboard() {
   const { usuario, logout } = useAuth();
   const navigate = useNavigate();
+  const role = usuario?.role;
 
   return (
     <div style={styles.container}>
@@ -11,7 +12,7 @@ export default function Dashboard() {
         <h1 style={styles.logo}>ConveniFlow</h1>
         <div style={styles.headerDireita}>
           <span style={styles.nomeUsuario}>Olá, {usuario?.nome}</span>
-          <span style={styles.role}>{usuario?.role}</span>
+          <span style={styles.role}>{role}</span>
           <button onClick={logout} style={styles.botaoLogout}>
             Sair
           </button>
@@ -38,21 +39,31 @@ export default function Dashboard() {
             <h3 style={styles.cardTitulo}>Caixa</h3>
             <p style={styles.cardDesc}>Controle abertura e fechamento</p>
           </div>
-          <div style={styles.card} onClick={() => navigate("/categorias")}>
-            <span style={styles.icone}>🏷️</span>
-            <h3 style={styles.cardTitulo}>Categorias</h3>
-            <p style={styles.cardDesc}>Organize os produtos por categoria</p>
-          </div>
-          <div style={styles.card} onClick={() => navigate("/fornecedores")}>
-            <span style={styles.icone}>🚚</span>
-            <h3 style={styles.cardTitulo}>Fornecedores</h3>
-            <p style={styles.cardDesc}>Gerencie seus fornecedores</p>
-          </div>
-          <div style={styles.card} onClick={() => navigate("/relatorios")}>
-            <span style={styles.icone}>📊</span>
-            <h3 style={styles.cardTitulo}>Relatórios</h3>
-            <p style={styles.cardDesc}>Visualize o desempenho do negócio</p>
-          </div>
+
+          {(role === "ADMIN" || role === "GERENTE") && (
+            <>
+              <div style={styles.card} onClick={() => navigate("/categorias")}>
+                <span style={styles.icone}>🏷️</span>
+                <h3 style={styles.cardTitulo}>Categorias</h3>
+                <p style={styles.cardDesc}>
+                  Organize os produtos por categoria
+                </p>
+              </div>
+              <div
+                style={styles.card}
+                onClick={() => navigate("/fornecedores")}
+              >
+                <span style={styles.icone}>🚚</span>
+                <h3 style={styles.cardTitulo}>Fornecedores</h3>
+                <p style={styles.cardDesc}>Gerencie seus fornecedores</p>
+              </div>
+              <div style={styles.card} onClick={() => navigate("/relatorios")}>
+                <span style={styles.icone}>📊</span>
+                <h3 style={styles.cardTitulo}>Relatórios</h3>
+                <p style={styles.cardDesc}>Visualize o desempenho do negócio</p>
+              </div>
+            </>
+          )}
         </div>
       </main>
     </div>
