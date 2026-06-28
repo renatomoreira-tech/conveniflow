@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 export default function Caixa() {
-  const navigate = useNavigate();
   const [caixas, setCaixas] = useState([]);
   const [caixaAtual, setCaixaAtual] = useState(null);
   const [carregando, setCarregando] = useState(true);
@@ -69,15 +67,7 @@ export default function Caixa() {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <div style={styles.headerEsquerda}>
-          <button
-            onClick={() => navigate("/dashboard")}
-            style={styles.botaoVoltar}
-          >
-            ← Voltar
-          </button>
-          <h2 style={styles.titulo}>📦 Controle de Caixa</h2>
-        </div>
+        <h2 style={styles.titulo}>📦 Controle de Caixa</h2>
       </div>
 
       {/* ─── CAIXA ATUAL ─── */}
@@ -211,26 +201,14 @@ export default function Caixa() {
 }
 
 const styles = {
-  container: {
-    padding: "32px",
-    minHeight: "100vh",
-    backgroundColor: "#f0f2f5",
-  },
+  container: { padding: "0" },
   header: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: "24px",
   },
-  headerEsquerda: { display: "flex", alignItems: "center", gap: "16px" },
-  botaoVoltar: {
-    backgroundColor: "#fff",
-    border: "1px solid #ddd",
-    borderRadius: "8px",
-    padding: "8px 16px",
-    cursor: "pointer",
-    fontSize: "14px",
-  },
+
   titulo: { fontSize: "22px", fontWeight: "bold", color: "#1a1a2e", margin: 0 },
   caixaCard: {
     backgroundColor: "#fff",

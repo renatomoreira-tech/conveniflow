@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 export default function Fornecedores() {
-  const navigate = useNavigate();
   const [fornecedores, setFornecedores] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
@@ -80,13 +78,7 @@ export default function Fornecedores() {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <div style={styles.headerEsquerda}>
-          <button
-            onClick={() => navigate("/dashboard")}
-            style={styles.botaoVoltar}
-          >
-            ← Voltar
-          </button>
+        <div>
           <h2 style={styles.titulo}>🚚 Fornecedores</h2>
         </div>
         <button onClick={() => abrirModal()} style={styles.botaoNovo}>
@@ -197,11 +189,7 @@ export default function Fornecedores() {
 }
 
 const styles = {
-  container: {
-    padding: "32px",
-    minHeight: "100vh",
-    backgroundColor: "#f0f2f5",
-  },
+  container: { padding: "0" },
   header: {
     display: "flex",
     justifyContent: "space-between",

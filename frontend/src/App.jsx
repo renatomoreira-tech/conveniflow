@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Produtos from "./pages/Produtos";
@@ -24,7 +25,9 @@ function App() {
             path="/dashboard"
             element={
               <RotaProtegida>
-                <Dashboard />
+                <Layout>
+                  <Dashboard />
+                </Layout>
               </RotaProtegida>
             }
           />
@@ -32,7 +35,9 @@ function App() {
             path="/produtos"
             element={
               <RotaProtegida>
-                <Produtos />
+                <Layout>
+                  <Produtos />
+                </Layout>
               </RotaProtegida>
             }
           />
@@ -40,7 +45,9 @@ function App() {
             path="/relatorios"
             element={
               <RotaProtegida>
-                <Relatorios />
+                <Layout>
+                  <Relatorios />
+                </Layout>
               </RotaProtegida>
             }
           />
@@ -48,7 +55,9 @@ function App() {
             path="/vendas"
             element={
               <RotaProtegida>
-                <Vendas />
+                <Layout>
+                  <Vendas />
+                </Layout>
               </RotaProtegida>
             }
           />
@@ -56,7 +65,9 @@ function App() {
             path="/categorias"
             element={
               <RotaProtegida>
-                <Categorias />
+                <Layout>
+                  <Categorias />
+                </Layout>
               </RotaProtegida>
             }
           />
@@ -64,7 +75,9 @@ function App() {
             path="/fornecedores"
             element={
               <RotaProtegida>
-                <Fornecedores />
+                <Layout>
+                  <Fornecedores />
+                </Layout>
               </RotaProtegida>
             }
           />
@@ -72,7 +85,9 @@ function App() {
             path="/caixa"
             element={
               <RotaProtegida>
-                <Caixa />
+                <Layout>
+                  <Caixa />
+                </Layout>
               </RotaProtegida>
             }
           />

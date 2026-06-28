@@ -1,9 +1,7 @@
 import { useState } from "react";
 import api from "../services/api";
-import { useNavigate } from "react-router-dom";
 
 export default function Relatorios() {
-  const navigate = useNavigate();
   const [inicio, setInicio] = useState("");
   const [fim, setFim] = useState("");
   const [dados, setDados] = useState(null);
@@ -31,13 +29,7 @@ export default function Relatorios() {
     <div style={styles.container}>
       {/* ─── HEADER ─── */}
       <div style={styles.header}>
-        <div style={styles.headerEsquerda}>
-          <button
-            onClick={() => navigate("/dashboard")}
-            style={styles.botaoVoltar}
-          >
-            ← Voltar
-          </button>
+        <div>
           <h2 style={styles.titulo}>📊 Relatórios de Vendas</h2>
         </div>
       </div>
@@ -171,11 +163,7 @@ export default function Relatorios() {
 }
 
 const styles = {
-  container: {
-    padding: "32px",
-    minHeight: "100vh",
-    backgroundColor: "#f0f2f5",
-  },
+  container: { padding: "0" },
   header: {
     display: "flex",
     justifyContent: "space-between",

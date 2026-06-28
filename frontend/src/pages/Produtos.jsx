@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
 export default function Produtos() {
-  const navigate = useNavigate();
   const { usuario } = useAuth();
   const role = usuario?.role;
 
@@ -124,15 +122,7 @@ export default function Produtos() {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <div style={styles.headerEsquerda}>
-          <button
-            onClick={() => navigate("/dashboard")}
-            style={styles.botaoVoltar}
-          >
-            ← Voltar
-          </button>
-          <h2 style={styles.titulo}>🛍️ Produtos</h2>
-        </div>
+        <h2 style={styles.titulo}>🛍️ Produtos</h2>
         {(role === "ADMIN" || role === "GERENTE") && (
           <button onClick={() => abrirModal()} style={styles.botaoNovo}>
             + Novo Produto
@@ -310,25 +300,12 @@ export default function Produtos() {
 }
 
 const styles = {
-  container: {
-    padding: "32px",
-    minHeight: "100vh",
-    backgroundColor: "#f0f2f5",
-  },
+  container: { padding: "0" },
   header: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: "24px",
-  },
-  headerEsquerda: { display: "flex", alignItems: "center", gap: "16px" },
-  botaoVoltar: {
-    backgroundColor: "#fff",
-    border: "1px solid #ddd",
-    borderRadius: "8px",
-    padding: "8px 16px",
-    cursor: "pointer",
-    fontSize: "14px",
   },
   titulo: { fontSize: "22px", fontWeight: "bold", color: "#1a1a2e", margin: 0 },
   botaoNovo: {

@@ -1,10 +1,8 @@
 import { useAuth } from "../context/AuthContext";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 export default function Vendas() {
-  const navigate = useNavigate();
   const { usuario } = useAuth();
   const role = usuario?.role;
   const [produtos, setProdutos] = useState([]);
@@ -118,15 +116,7 @@ export default function Vendas() {
     <div style={styles.container}>
       {/* ─── HEADER ─── */}
       <div style={styles.header}>
-        <div style={styles.headerEsquerda}>
-          <button
-            onClick={() => navigate("/dashboard")}
-            style={styles.botaoVoltar}
-          >
-            ← Voltar
-          </button>
-          <h2 style={styles.titulo}>💰 Vendas</h2>
-        </div>
+        <h2 style={styles.titulo}>💰 Vendas</h2>
         <button onClick={abrirModal} style={styles.botaoNovo}>
           + Nova Venda
         </button>
@@ -321,26 +311,14 @@ export default function Vendas() {
 }
 
 const styles = {
-  container: {
-    padding: "32px",
-    minHeight: "100vh",
-    backgroundColor: "#f0f2f5",
-  },
+  container: { padding: "0" },
   header: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: "24px",
   },
-  headerEsquerda: { display: "flex", alignItems: "center", gap: "16px" },
-  botaoVoltar: {
-    backgroundColor: "#fff",
-    border: "1px solid #ddd",
-    borderRadius: "8px",
-    padding: "8px 16px",
-    cursor: "pointer",
-    fontSize: "14px",
-  },
+
   titulo: { fontSize: "22px", fontWeight: "bold", color: "#1a1a2e", margin: 0 },
   botaoNovo: {
     backgroundColor: "#4f46e5",
