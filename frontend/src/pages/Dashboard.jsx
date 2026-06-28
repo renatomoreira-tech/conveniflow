@@ -365,3 +365,4 @@ const styles = {
     marginBottom: "8px",
     color: "#1a1a2e",
   },
+};
