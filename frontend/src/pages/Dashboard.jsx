@@ -207,3 +207,142 @@ export default function Dashboard() {
     </div>
   );
 }
+const styles = {
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: "28px",
+  },
+  saudacao: {
+    fontSize: "22px",
+    fontWeight: "bold",
+    color: "#1a1a2e",
+    margin: "0 0 4px",
+  },
+  subtitulo: {
+    color: "#888",
+    fontSize: "14px",
+    margin: 0,
+  },
+  data: {
+    fontSize: "13px",
+    color: "#888",
+  },
+  carregando: {
+    textAlign: "center",
+    color: "#888",
+    marginTop: "40px",
+  },
+  metricasGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(4, 1fr)",
+    gap: "16px",
+    marginBottom: "24px",
+  },
+  metricaCard: {
+    backgroundColor: "#fff",
+    borderRadius: "12px",
+    padding: "20px",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.04)",
+  },
+  metricaIconBox: {
+    width: "40px",
+    height: "40px",
+    borderRadius: "10px",
+    backgroundColor: "#e6f1fb",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: "12px",
+  },
+  metricaIcon: {
+    fontSize: "20px",
+  },
+  metricaLabel: {
+    fontSize: "13px",
+    color: "#888",
+    margin: "0 0 6px",
+  },
+  metricaValor: {
+    fontSize: "24px",
+    fontWeight: "bold",
+    color: "#1a1a2e",
+    margin: 0,
+  },
+  bottomGrid: {
+    display: "grid",
+    gridTemplateColumns: "1.5fr 1fr",
+    gap: "16px",
+  },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: "12px",
+    padding: "24px",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.04)",
+  },
+  cardTitulo: {
+    fontSize: "16px",
+    fontWeight: "600",
+    color: "#1a1a2e",
+    margin: "0 0 16px",
+  },
+  vazio: {
+    color: "#888",
+    fontSize: "14px",
+    textAlign: "center",
+    padding: "20px 0",
+  },
+  vendaItem: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "12px 0",
+    borderBottom: "1px solid #f0f0f0",
+  },
+  vendaNome: {
+    fontSize: "13px",
+    fontWeight: "600",
+    color: "#1a1a2e",
+    margin: 0,
+  },
+  vendaHora: {
+    fontSize: "11px",
+    color: "#888",
+    margin: "4px 0 0",
+  },
+  vendaDireita: {
+    textAlign: "right",
+  },
+  vendaValor: {
+    fontSize: "14px",
+    fontWeight: "bold",
+    color: "#1a1a2e",
+    margin: "0 0 4px",
+  },
+  vendaPagamento: {
+    fontSize: "11px",
+    padding: "2px 8px",
+    borderRadius: "12px",
+    backgroundColor: "#e0e7ff",
+    color: "#4338ca",
+  },
+  rightCol: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "16px",
+  },
+  caixaStatus: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  },
+  caixaDot: {
+    width: "10px",
+    height: "10px",
+    borderRadius: "50%",
+    backgroundColor: "#065f46",
+  },
+  caixaTexto: {
+    fontSize: "14px",
+    fontWeight: "600",
