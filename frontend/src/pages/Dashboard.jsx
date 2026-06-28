@@ -9,7 +9,7 @@ export default function Dashboard() {
   return (
     <div style={styles.container}>
       <header style={styles.header}>
-        <h1 style={styles.logo}>ConveniFlow</h1>
+        <h1 style={styles.logo}>GestorFlow</h1>
         <div style={styles.headerDireita}>
           <span style={styles.nomeUsuario}>Olá, {usuario?.nome}</span>
           <span style={styles.role}>{role}</span>

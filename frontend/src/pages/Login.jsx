@@ -25,7 +25,7 @@ export default function Login() {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h1 style={styles.titulo}>ConveniFlow</h1>
+        <h1 style={styles.titulo}>GestorFlow</h1>
         <p style={styles.subtitulo}>Sistema de Gestão</p>
 
         <form onSubmit={handleLogin} style={styles.form}>
