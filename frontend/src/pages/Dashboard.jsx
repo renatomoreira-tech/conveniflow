@@ -61,14 +61,6 @@ export default function Dashboard() {
           <h2 style={styles.saudacao}>Bom dia, {usuario?.nome} 👋</h2>
           <p style={styles.subtitulo}>Aqui está o resumo do seu negócio</p>
         </div>
-        <span style={styles.data}>
-          {new Date().toLocaleDateString("pt-BR", {
-            weekday: "long",
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          })}
-        </span>
       </div>
 
       {/* ─── MÉTRICAS ─── */}
@@ -224,10 +216,6 @@ const styles = {
     color: "#888",
     fontSize: "14px",
     margin: 0,
-  },
-  data: {
-    fontSize: "13px",
-    color: "#888",
   },
   carregando: {
     textAlign: "center",
