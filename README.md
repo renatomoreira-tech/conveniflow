@@ -1,12 +1,16 @@
-# 🏪 ConveniFlow
+# 🏪 GestorFlow
 
-Sistema completo de gestão para conveniências, desenvolvido com **Node.js**, **React**, **PostgreSQL** e **Prisma ORM**.
+Sistema completo de gestão para pequenos comércios, desenvolvido com **Node.js**, **React**, **PostgreSQL** e **Prisma ORM**.
+
+🔗 **Acesse:** [conveniflow.vercel.app](https://conveniflow.vercel.app)
+
+🔑 **Demo:** `demo@conveniflow.com` / `demo123`
 
 ---
 
 ## 📋 Sobre o Projeto
 
-O ConveniFlow é um sistema full stack para gerenciamento de conveniências e pequenos comércios. Ele permite o controle completo de produtos, vendas, estoque, caixa, categorias e fornecedores, com autenticação segura e controle de acesso por perfil de usuário.
+O GestorFlow é um sistema full stack para gerenciamento de conveniências, lojas de bebidas, açaiterias, salões de beleza e pequenos comércios em geral. Ele permite o controle completo de produtos, vendas, estoque, caixa, categorias e fornecedores, com autenticação segura e controle de acesso por perfil de usuário.
 
 ---
 
@@ -14,12 +18,15 @@ O ConveniFlow é um sistema full stack para gerenciamento de conveniências e pe
 
 - **Autenticação JWT** com senhas criptografadas (bcrypt)
 - **Controle de acesso por roles** (Admin, Gerente, Caixa)
+- **Dashboard com métricas** — vendas do dia, pedidos, ticket médio, estoque baixo
 - **Gestão de Produtos** — cadastro com código de barras, preço de custo/venda, estoque mínimo
 - **Registro de Vendas** — múltiplos itens por venda, formas de pagamento (Dinheiro, PIX, Cartão), desconto
 - **Cancelamento de Vendas** — com devolução automática do estoque
 - **Controle de Caixa** — abertura/fechamento com histórico e diferença de valores
 - **Categorias e Fornecedores** — organização e rastreabilidade dos produtos
 - **Relatórios** — vendas por período com faturamento total e ticket médio
+- **Sidebar de navegação** — interface profissional com menu lateral
+- **Visibilidade por role** — cada perfil vê apenas o que pode acessar
 - **Soft Delete** — produtos e usuários são desativados sem perder histórico
 
 ---
@@ -41,12 +48,18 @@ O ConveniFlow é um sistema full stack para gerenciamento de conveniências e pe
 - React Router DOM
 - Axios
 
+### Deploy
+
+- Frontend: Vercel
+- Backend: Railway
+- Banco de dados: Railway (PostgreSQL)
+
 ---
 
 ## 📁 Estrutura do Projeto
 
 ```
-conveniflow/
+gestorflow/
 ├── backend/
 │   ├── prisma/
 │   │   └── schema.prisma
@@ -67,7 +80,6 @@ conveniflow/
 │   │   │   └── caixaRoutes.js
 │   │   ├── middleware/
 │   │   │   └── auth.js
-│   │   ├── services/
 │   │   ├── app.js
 │   │   └── database.js
 │   ├── server.js
@@ -76,6 +88,8 @@ conveniflow/
 │
 └── frontend/
     ├── src/
+    │   ├── components/
+    │   │   └── Layout.jsx
     │   ├── pages/
     │   │   ├── Login.jsx
     │   │   ├── Dashboard.jsx
@@ -90,6 +104,7 @@ conveniflow/
     │   ├── services/
     │   │   └── api.js
     │   └── App.jsx
+    ├── vercel.json
     └── package.json
 ```
 
@@ -125,7 +140,7 @@ npm install
 Configure o arquivo `.env`:
 
 ```
-DATABASE_URL="postgresql://postgres:SUA_SENHA@localhost:5432/conveniflow_db"
+DATABASE_URL="postgresql://postgres:SUA_SENHA@localhost:5432/gestorflow_db"
 JWT_SECRET=sua_chave_secreta
 ```
 
@@ -148,7 +163,24 @@ Acesse: `http://localhost:5173`
 
 ---
 
-## 🔐 Endpoints da API
+## 🔐 Controle de Acesso
+
+| Funcionalidade            | ADMIN | GERENTE | CAIXA |
+| ------------------------- | ----- | ------- | ----- |
+| Dashboard com métricas    | ✅    | ✅      | ✅    |
+| Visualizar produtos       | ✅    | ✅      | ✅    |
+| Criar/editar produtos     | ✅    | ✅      | ❌    |
+| Desativar produtos        | ✅    | ❌      | ❌    |
+| Registrar vendas          | ✅    | ✅      | ✅    |
+| Cancelar vendas           | ✅    | ✅      | ❌    |
+| Relatórios                | ✅    | ✅      | ❌    |
+| Categorias e Fornecedores | ✅    | ✅      | ❌    |
+| Caixa                     | ✅    | ✅      | ✅    |
+| Gerenciar usuários        | ✅    | ❌      | ❌    |
+
+---
+
+## 🔗 Endpoints da API
 
 ### Autenticação
 
