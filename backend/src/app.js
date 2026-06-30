@@ -12,7 +12,12 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://conveniflow.vercel.app"],
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "https://conveniflow.vercel.app",
+      "https://gestorflow-app.vercel.app",
+    ],
     credentials: true,
   }),
 );
@@ -28,7 +33,7 @@ app.use(caixaRoutes);
 
 // ─── ROTA BASE ───────────────────────────────────────────
 app.get("/", (req, res) => {
-  res.json({ message: "API ConveniFlow funcionando!" });
+  res.json({ message: "API GestorFlow funcionando!" });
 });
 
 // ─── ROTA NÃO ENCONTRADA ─────────────────────────────────
