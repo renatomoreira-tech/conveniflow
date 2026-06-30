@@ -24,6 +24,7 @@ export default function Login() {
   return (
     <div style={s.container}>
       <div style={s.card}>
+        <img src="/icon.svg" alt="" style={s.logo} />
         <h1 style={s.titulo}>GestorFlow</h1>
         <p style={s.subtitulo}>Sistema de Gestão</p>
 
@@ -102,6 +103,13 @@ const s = {
     border: "0.5px solid var(--color-border-tertiary)",
     width: "100%",
     maxWidth: "380px",
+    textAlign: "center",
+  },
+  logo: {
+    width: "56px",
+    height: "56px",
+    borderRadius: "14px",
+    marginBottom: "16px",
   },
   titulo: {
     textAlign: "center",
@@ -120,6 +128,7 @@ const s = {
     display: "flex",
     flexDirection: "column",
     gap: "14px",
+    textAlign: "left",
   },
   campo: {
     display: "flex",

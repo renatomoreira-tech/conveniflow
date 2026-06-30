@@ -2,9 +2,9 @@
 
 Sistema completo de gestão para pequenos comércios, desenvolvido com **Node.js**, **React**, **PostgreSQL** e **Prisma ORM**.
 
-🔗 **Acesse:** [conveniflow.vercel.app](https://conveniflow.vercel.app)
+🔗 **Acesse:** [gestorflow-app.vercel.app](https://gestorflow-app.vercel.app)
 
-🔑 **Demo:** `demo@conveniflow.com` / `demo123`
+🔑 **Demo:** `demo@gestorflow.com` / `demo123`
 
 ---
 
@@ -25,7 +25,8 @@ O GestorFlow é um sistema full stack para gerenciamento de conveniências, loja
 - **Controle de Caixa** — abertura/fechamento com histórico e diferença de valores
 - **Categorias e Fornecedores** — organização e rastreabilidade dos produtos
 - **Relatórios** — vendas por período com faturamento total e ticket médio
-- **Sidebar de navegação** — interface profissional com menu lateral
+- **Dark mode** — tema claro/escuro com persistência e detecção automática da preferência do sistema
+- **Sidebar de navegação** — interface profissional com menu lateral e ícones
 - **Visibilidade por role** — cada perfil vê apenas o que pode acessar
 - **Soft Delete** — produtos e usuários são desativados sem perder histórico
 
@@ -47,6 +48,8 @@ O GestorFlow é um sistema full stack para gerenciamento de conveniências, loja
 - React (Vite)
 - React Router DOM
 - Axios
+- Lucide React (ícones)
+- CSS Variables (sistema de tema light/dark)
 
 ### Deploy
 
@@ -87,9 +90,19 @@ gestorflow/
 │   └── package.json
 │
 └── frontend/
+    ├── public/
+    │   ├── favicon.ico
+    │   ├── icon.svg
+    │   ├── icon-192.png
+    │   └── icon-512.png
     ├── src/
     │   ├── components/
-    │   │   └── Layout.jsx
+    │   │   ├── Layout.jsx
+    │   │   └── ThemeToggle/
+    │   │       ├── ThemeToggle.jsx
+    │   │       └── ThemeToggle.module.css
+    │   ├── hooks/
+    │   │   └── useTheme.js
     │   ├── pages/
     │   │   ├── Login.jsx
     │   │   ├── Dashboard.jsx
@@ -103,6 +116,8 @@ gestorflow/
     │   │   └── AuthContext.jsx
     │   ├── services/
     │   │   └── api.js
+    │   ├── styles/
+    │   │   └── theme.css
     │   └── App.jsx
     ├── vercel.json
     └── package.json
