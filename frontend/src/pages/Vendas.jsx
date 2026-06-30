@@ -1,6 +1,7 @@
 import { useAuth } from "../context/AuthContext";
 import { useState, useEffect } from "react";
 import api from "../services/api";
+import { Receipt, Plus, X } from "lucide-react";
 
 export default function Vendas() {
   const { usuario } = useAuth();
@@ -110,86 +111,90 @@ export default function Vendas() {
     }
   }
 
-  if (carregando) return <p style={styles.carregando}>Carregando...</p>;
+  if (carregando) return <p style={s.carregando}>Carregando...</p>;
 
   return (
-    <div style={styles.container}>
+    <div style={s.container}>
       {/* ─── HEADER ─── */}
-      <div style={styles.header}>
-        <h2 style={styles.titulo}>💰 Vendas</h2>
-        <button onClick={abrirModal} style={styles.botaoNovo}>
-          + Nova Venda
+      <div style={s.header}>
+        <h2 style={s.titulo}>
+          <Receipt size={20} style={s.tituloIcon} aria-hidden="true" />
+          Vendas
+        </h2>
+        <button onClick={abrirModal} style={s.botaoNovo}>
+          <Plus size={14} aria-hidden="true" />
+          Nova Venda
         </button>
       </div>
 
-      {sucesso && <p style={styles.sucesso}>{sucesso}</p>}
+      {sucesso && <p style={s.sucesso}>{sucesso}</p>}
 
       {/* ─── TABELA DE VENDAS ─── */}
-      <div style={styles.tabelaContainer}>
-        <table style={styles.tabela}>
+      <div style={s.tabelaContainer}>
+        <table style={s.tabela}>
           <thead>
-            <tr style={styles.thead}>
-              <th style={styles.th}>#</th>
-              <th style={styles.th}>Data</th>
-              <th style={styles.th}>Operador</th>
-              <th style={styles.th}>Itens</th>
-              <th style={styles.th}>Pagamento</th>
-              <th style={styles.th}>Total</th>
-              <th style={styles.th}>Status</th>
-              <th style={styles.th}>Ações</th>
+            <tr style={s.thead}>
+              <th style={s.th}>#</th>
+              <th style={s.th}>Data</th>
+              <th style={s.th}>Operador</th>
+              <th style={s.th}>Itens</th>
+              <th style={s.th}>Pagamento</th>
+              <th style={s.th}>Total</th>
+              <th style={s.th}>Status</th>
+              <th style={s.th}>Ações</th>
             </tr>
           </thead>
           <tbody>
             {vendas.length === 0 ? (
               <tr>
-                <td colSpan="8" style={styles.vazio}>
+                <td colSpan="8" style={s.vazio}>
                   Nenhuma venda registrada
                 </td>
               </tr>
             ) : (
               vendas.map((venda) => (
-                <tr key={venda.id} style={styles.tr}>
-                  <td style={styles.td}>#{venda.id}</td>
-                  <td style={styles.td}>
+                <tr key={venda.id} style={s.tr}>
+                  <td style={s.td}>#{venda.id}</td>
+                  <td style={s.td}>
                     {new Date(venda.data_venda).toLocaleDateString("pt-BR")}{" "}
                     {new Date(venda.data_venda).toLocaleTimeString("pt-BR", {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
                   </td>
-                  <td style={styles.td}>{venda.user?.nome || "—"}</td>
-                  <td style={styles.td}>
+                  <td style={s.td}>{venda.user?.nome || "—"}</td>
+                  <td style={s.td}>
                     {venda.itens.map((item) => (
-                      <div key={item.id} style={styles.item}>
+                      <div key={item.id} style={s.item}>
                         {item.product?.nome} x{item.quantidade}
                       </div>
                     ))}
                   </td>
-                  <td style={styles.td}>
-                    <span style={styles.pagamento}>
+                  <td style={s.td}>
+                    <span style={s.pagamento}>
                       {venda.formaPagamento.replace("_", " ")}
                     </span>
                   </td>
-                  <td style={styles.td}>
+                  <td style={s.td}>
                     <strong>R$ {venda.valor_total.toFixed(2)}</strong>
                   </td>
-                  <td style={styles.td}>
+                  <td style={s.td}>
                     <span
                       style={
                         venda.status === "CONCLUIDA"
-                          ? styles.statusConcluida
-                          : styles.statusCancelada
+                          ? s.statusConcluida
+                          : s.statusCancelada
                       }
                     >
                       {venda.status}
                     </span>
                   </td>
-                  <td style={styles.td}>
+                  <td style={s.td}>
                     {venda.status === "CONCLUIDA" &&
                       (role === "ADMIN" || role === "GERENTE") && (
                         <button
                           onClick={() => handleCancelarVenda(venda.id)}
-                          style={styles.botaoCancelar}
+                          style={s.botaoCancelar}
                         >
                           Cancelar
                         </button>
@@ -204,21 +209,30 @@ export default function Vendas() {
 
       {/* ─── MODAL NOVA VENDA ─── */}
       {modalAberto && (
-        <div style={styles.overlay}>
-          <div style={styles.modal}>
-            <h3 style={styles.modalTitulo}>Nova Venda</h3>
+        <div style={s.overlay} onClick={() => setModalAberto(false)}>
+          <div style={s.modal} onClick={(e) => e.stopPropagation()}>
+            <div style={s.modalHeader}>
+              <h3 style={s.modalTitulo}>Nova Venda</h3>
+              <button
+                onClick={() => setModalAberto(false)}
+                style={s.botaoFechar}
+                aria-label="Fechar"
+              >
+                <X size={18} aria-hidden="true" />
+              </button>
+            </div>
 
             {/* ─── ITENS ─── */}
-            <div style={styles.secao}>
-              <h4 style={styles.secaoTitulo}>Produtos</h4>
+            <div style={s.secao}>
+              <h4 style={s.secaoTitulo}>Produtos</h4>
               {itens.map((item, index) => (
-                <div key={index} style={styles.itemRow}>
+                <div key={index} style={s.itemRow}>
                   <select
                     value={item.productId}
                     onChange={(e) =>
                       atualizarItem(index, "productId", e.target.value)
                     }
-                    style={styles.selectProduto}
+                    style={s.selectProduto}
                   >
                     <option value="">Selecione...</option>
                     {produtos.map((p) => (
@@ -234,32 +248,33 @@ export default function Vendas() {
                     onChange={(e) =>
                       atualizarItem(index, "quantidade", e.target.value)
                     }
-                    style={styles.inputQtd}
+                    style={s.inputQtd}
                     placeholder="Qtd"
                   />
                   <button
                     onClick={() => removerItem(index)}
-                    style={styles.botaoRemover}
+                    style={s.botaoRemover}
                   >
-                    ✕
+                    <X size={14} aria-hidden="true" />
                   </button>
                 </div>
               ))}
-              <button onClick={adicionarItem} style={styles.botaoAdicionarItem}>
-                + Adicionar produto
+              <button onClick={adicionarItem} style={s.botaoAdicionarItem}>
+                <Plus size={13} aria-hidden="true" />
+                Adicionar produto
               </button>
             </div>
 
             {/* ─── PAGAMENTO ─── */}
-            <div style={styles.secao}>
-              <h4 style={styles.secaoTitulo}>Pagamento</h4>
-              <div style={styles.pagamentoGrid}>
-                <div style={styles.campo}>
-                  <label style={styles.label}>Forma de pagamento</label>
+            <div style={s.secao}>
+              <h4 style={s.secaoTitulo}>Pagamento</h4>
+              <div style={s.pagamentoGrid}>
+                <div style={s.campo}>
+                  <label style={s.label}>Forma de pagamento</label>
                   <select
                     value={formaPagamento}
                     onChange={(e) => setFormaPagamento(e.target.value)}
-                    style={styles.input}
+                    style={s.input}
                   >
                     <option value="DINHEIRO">Dinheiro</option>
                     <option value="CARTAO_DEBITO">Cartão Débito</option>
@@ -267,8 +282,8 @@ export default function Vendas() {
                     <option value="PIX">PIX</option>
                   </select>
                 </div>
-                <div style={styles.campo}>
-                  <label style={styles.label}>Desconto (R$)</label>
+                <div style={s.campo}>
+                  <label style={s.label}>Desconto (R$)</label>
                   <input
                     type="number"
                     min="0"
@@ -276,30 +291,28 @@ export default function Vendas() {
                     onChange={(e) =>
                       setDesconto(parseFloat(e.target.value) || 0)
                     }
-                    style={styles.input}
+                    style={s.input}
                   />
                 </div>
               </div>
             </div>
 
             {/* ─── TOTAL ─── */}
-            <div style={styles.totalBox}>
-              <span style={styles.totalLabel}>Total da venda:</span>
-              <span style={styles.totalValor}>
-                R$ {calcularTotal().toFixed(2)}
-              </span>
+            <div style={s.totalBox}>
+              <span style={s.totalLabel}>Total da venda:</span>
+              <span style={s.totalValor}>R$ {calcularTotal().toFixed(2)}</span>
             </div>
 
-            {erro && <p style={styles.erro}>{erro}</p>}
+            {erro && <p style={s.erro}>{erro}</p>}
 
-            <div style={styles.modalBotoes}>
+            <div style={s.modalBotoes}>
               <button
                 onClick={() => setModalAberto(false)}
-                style={styles.botaoCancelarModal}
+                style={s.botaoCancelarModal}
               >
                 Cancelar
               </button>
-              <button onClick={handleRegistrarVenda} style={styles.botaoSalvar}>
+              <button onClick={handleRegistrarVenda} style={s.botaoSalvar}>
                 Registrar Venda
               </button>
             </div>
@@ -310,89 +323,112 @@ export default function Vendas() {
   );
 }
 
-const styles = {
+const s = {
   container: { padding: "0" },
   header: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: "24px",
+    marginBottom: "20px",
   },
-
-  titulo: { fontSize: "22px", fontWeight: "bold", color: "#1a1a2e", margin: 0 },
+  titulo: {
+    fontSize: "18px",
+    fontWeight: "500",
+    color: "var(--color-text-primary)",
+    margin: 0,
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  },
+  tituloIcon: { color: "var(--color-text-secondary)" },
   botaoNovo: {
-    backgroundColor: "#4f46e5",
-    color: "#fff",
+    backgroundColor: "var(--color-text-info)",
+    color: "#ffffff",
     border: "none",
-    borderRadius: "8px",
-    padding: "10px 20px",
+    borderRadius: "var(--border-radius-md)",
+    padding: "9px 16px",
     cursor: "pointer",
-    fontWeight: "600",
+    fontWeight: "500",
+    fontSize: "13px",
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    fontFamily: "inherit",
   },
   tabelaContainer: {
-    backgroundColor: "#fff",
-    borderRadius: "12px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
+    backgroundColor: "var(--color-background-primary)",
+    borderRadius: "var(--border-radius-lg)",
+    border: "0.5px solid var(--color-border-tertiary)",
     overflow: "hidden",
   },
   tabela: { width: "100%", borderCollapse: "collapse" },
-  thead: { backgroundColor: "#f8f9fa" },
+  thead: { backgroundColor: "var(--color-background-secondary)" },
   th: {
-    padding: "14px 16px",
+    padding: "12px 16px",
     textAlign: "left",
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#555",
+    fontSize: "12px",
+    fontWeight: "500",
+    color: "var(--color-text-secondary)",
   },
-  tr: { borderTop: "1px solid #f0f0f0" },
+  tr: { borderTop: "0.5px solid var(--color-border-tertiary)" },
   td: {
-    padding: "14px 16px",
-    fontSize: "14px",
-    color: "#333",
+    padding: "12px 16px",
+    fontSize: "13px",
+    color: "var(--color-text-primary)",
     verticalAlign: "top",
   },
-  item: { fontSize: "13px", color: "#555", marginBottom: "2px" },
-  pagamento: {
-    backgroundColor: "#e0e7ff",
-    color: "#4338ca",
-    padding: "4px 10px",
-    borderRadius: "20px",
+  item: {
     fontSize: "12px",
-    fontWeight: "600",
+    color: "var(--color-text-secondary)",
+    marginBottom: "2px",
+  },
+  pagamento: {
+    backgroundColor: "var(--color-badge-blue-bg)",
+    color: "var(--color-badge-blue-text)",
+    padding: "3px 10px",
+    borderRadius: "20px",
+    fontSize: "11px",
+    fontWeight: "500",
   },
   statusConcluida: {
-    backgroundColor: "#d1fae5",
-    color: "#065f46",
-    padding: "4px 10px",
+    backgroundColor: "var(--color-badge-green-bg)",
+    color: "var(--color-badge-green-text)",
+    padding: "3px 10px",
     borderRadius: "20px",
-    fontSize: "12px",
-    fontWeight: "600",
+    fontSize: "11px",
+    fontWeight: "500",
   },
   statusCancelada: {
-    backgroundColor: "#fee2e2",
-    color: "#991b1b",
-    padding: "4px 10px",
+    backgroundColor: "var(--color-danger-bg)",
+    color: "var(--color-danger-text)",
+    padding: "3px 10px",
     borderRadius: "20px",
-    fontSize: "12px",
-    fontWeight: "600",
+    fontSize: "11px",
+    fontWeight: "500",
   },
   botaoCancelar: {
-    backgroundColor: "#fee2e2",
-    color: "#991b1b",
+    backgroundColor: "var(--color-danger-bg)",
+    color: "var(--color-danger-text)",
     border: "none",
-    borderRadius: "6px",
-    padding: "6px 12px",
+    borderRadius: "var(--border-radius-sm)",
+    padding: "5px 11px",
     cursor: "pointer",
     fontSize: "12px",
+    fontFamily: "inherit",
   },
-  vazio: { padding: "40px", textAlign: "center", color: "#888" },
+  vazio: {
+    padding: "40px",
+    textAlign: "center",
+    color: "var(--color-text-secondary)",
+  },
   sucesso: {
-    backgroundColor: "#d1fae5",
-    color: "#065f46",
+    backgroundColor: "var(--color-badge-green-bg)",
+    color: "var(--color-badge-green-text)",
     padding: "12px",
-    borderRadius: "8px",
+    borderRadius: "var(--border-radius-md)",
     textAlign: "center",
     marginBottom: "16px",
+    fontSize: "13px",
   },
   overlay: {
     position: "fixed",
@@ -404,26 +440,41 @@ const styles = {
     zIndex: 1000,
   },
   modal: {
-    backgroundColor: "#fff",
-    borderRadius: "12px",
-    padding: "32px",
+    backgroundColor: "var(--color-background-primary)",
+    borderRadius: "var(--border-radius-lg)",
+    border: "0.5px solid var(--color-border-tertiary)",
+    padding: "28px",
     width: "100%",
     maxWidth: "600px",
     maxHeight: "90vh",
     overflowY: "auto",
   },
-  modalTitulo: {
-    fontSize: "18px",
-    fontWeight: "bold",
-    color: "#1a1a2e",
-    marginBottom: "24px",
+  modalHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "20px",
   },
-  secao: { marginBottom: "24px" },
+  modalTitulo: {
+    fontSize: "16px",
+    fontWeight: "500",
+    color: "var(--color-text-primary)",
+    margin: 0,
+  },
+  botaoFechar: {
+    background: "transparent",
+    border: "none",
+    cursor: "pointer",
+    color: "var(--color-text-secondary)",
+    display: "flex",
+    padding: "4px",
+  },
+  secao: { marginBottom: "20px" },
   secaoTitulo: {
-    fontSize: "14px",
-    fontWeight: "600",
-    color: "#555",
-    marginBottom: "12px",
+    fontSize: "13px",
+    fontWeight: "500",
+    color: "var(--color-text-secondary)",
+    marginBottom: "10px",
   },
   itemRow: {
     display: "flex",
@@ -433,85 +484,118 @@ const styles = {
   },
   selectProduto: {
     flex: 1,
-    padding: "10px 12px",
-    borderRadius: "8px",
-    border: "1px solid #ddd",
-    fontSize: "14px",
+    padding: "9px 12px",
+    borderRadius: "var(--border-radius-md)",
+    border: "0.5px solid var(--color-border-primary)",
+    fontSize: "13px",
+    backgroundColor: "var(--color-background-secondary)",
+    color: "var(--color-text-primary)",
+    fontFamily: "inherit",
   },
   inputQtd: {
-    width: "70px",
-    padding: "10px 12px",
-    borderRadius: "8px",
-    border: "1px solid #ddd",
-    fontSize: "14px",
+    width: "64px",
+    padding: "9px 10px",
+    borderRadius: "var(--border-radius-md)",
+    border: "0.5px solid var(--color-border-primary)",
+    fontSize: "13px",
     textAlign: "center",
+    backgroundColor: "var(--color-background-secondary)",
+    color: "var(--color-text-primary)",
+    fontFamily: "inherit",
   },
   botaoRemover: {
-    backgroundColor: "#fee2e2",
-    color: "#991b1b",
+    backgroundColor: "var(--color-danger-bg)",
+    color: "var(--color-danger-text)",
     border: "none",
-    borderRadius: "8px",
-    padding: "8px 12px",
+    borderRadius: "var(--border-radius-md)",
+    padding: "8px 10px",
     cursor: "pointer",
-    fontSize: "14px",
+    display: "flex",
   },
   botaoAdicionarItem: {
-    backgroundColor: "#f0f0f0",
-    color: "#333",
-    border: "none",
-    borderRadius: "8px",
-    padding: "8px 16px",
+    backgroundColor: "var(--color-background-secondary)",
+    color: "var(--color-text-primary)",
+    border: "0.5px solid var(--color-border-primary)",
+    borderRadius: "var(--border-radius-md)",
+    padding: "8px 14px",
     cursor: "pointer",
-    fontSize: "13px",
+    fontSize: "12px",
     marginTop: "4px",
+    display: "flex",
+    alignItems: "center",
+    gap: "5px",
+    fontFamily: "inherit",
   },
   pagamentoGrid: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
-    gap: "16px",
+    gap: "14px",
   },
   campo: { display: "flex", flexDirection: "column", gap: "6px" },
-  label: { fontSize: "13px", fontWeight: "600", color: "#555" },
+  label: {
+    fontSize: "12px",
+    fontWeight: "500",
+    color: "var(--color-text-secondary)",
+  },
   input: {
-    padding: "10px 12px",
-    borderRadius: "8px",
-    border: "1px solid #ddd",
-    fontSize: "14px",
+    padding: "9px 12px",
+    borderRadius: "var(--border-radius-md)",
+    border: "0.5px solid var(--color-border-primary)",
+    fontSize: "13px",
+    backgroundColor: "var(--color-background-secondary)",
+    color: "var(--color-text-primary)",
+    fontFamily: "inherit",
   },
   totalBox: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#f8f9fa",
-    borderRadius: "8px",
+    backgroundColor: "var(--color-background-secondary)",
+    borderRadius: "var(--border-radius-md)",
     padding: "16px",
     marginBottom: "16px",
   },
-  totalLabel: { fontSize: "16px", fontWeight: "600", color: "#1a1a2e" },
-  totalValor: { fontSize: "24px", fontWeight: "bold", color: "#4f46e5" },
-  erro: {
-    color: "#e53e3e",
+  totalLabel: {
     fontSize: "14px",
+    fontWeight: "500",
+    color: "var(--color-text-primary)",
+  },
+  totalValor: {
+    fontSize: "22px",
+    fontWeight: "600",
+    color: "var(--color-text-info)",
+  },
+  erro: {
+    color: "var(--color-danger-text)",
+    fontSize: "13px",
     textAlign: "center",
     marginBottom: "12px",
   },
-  modalBotoes: { display: "flex", justifyContent: "flex-end", gap: "12px" },
+  modalBotoes: { display: "flex", justifyContent: "flex-end", gap: "10px" },
   botaoCancelarModal: {
-    backgroundColor: "#f0f0f0",
-    color: "#333",
-    border: "none",
-    borderRadius: "8px",
-    padding: "10px 20px",
+    backgroundColor: "var(--color-background-secondary)",
+    color: "var(--color-text-primary)",
+    border: "0.5px solid var(--color-border-primary)",
+    borderRadius: "var(--border-radius-md)",
+    padding: "9px 18px",
     cursor: "pointer",
+    fontSize: "13px",
+    fontFamily: "inherit",
   },
   botaoSalvar: {
-    backgroundColor: "#4f46e5",
-    color: "#fff",
+    backgroundColor: "var(--color-text-info)",
+    color: "#ffffff",
     border: "none",
-    borderRadius: "8px",
-    padding: "10px 20px",
+    borderRadius: "var(--border-radius-md)",
+    padding: "9px 18px",
     cursor: "pointer",
-    fontWeight: "600",
+    fontWeight: "500",
+    fontSize: "13px",
+    fontFamily: "inherit",
   },
-  carregando: { textAlign: "center", marginTop: "40px", color: "#888" },
+  carregando: {
+    textAlign: "center",
+    marginTop: "40px",
+    color: "var(--color-text-secondary)",
+  },
 };

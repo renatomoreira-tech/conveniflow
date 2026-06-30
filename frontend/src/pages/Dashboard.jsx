@@ -2,6 +2,15 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
+import {
+  DollarSign,
+  ShoppingCart,
+  Receipt,
+  AlertTriangle,
+  CircleCheck,
+  Plus,
+  Package,
+} from "lucide-react";
 
 export default function Dashboard() {
   const { usuario } = useAuth();
@@ -40,7 +49,6 @@ export default function Dashboard() {
         (p) => p.estoque <= p.estoqueMinimo,
       ).length;
       setEstoqueBaixo(baixo);
-
       setCaixaAtual(caixaRes.data);
     } catch (error) {
       console.error("Erro ao carregar dashboard:", error);
@@ -51,81 +59,101 @@ export default function Dashboard() {
 
   const ticketMedio = vendasHoje.length > 0 ? totalHoje / vendasHoje.length : 0;
 
-  if (carregando) return <p style={styles.carregando}>Carregando...</p>;
+  const saudacao = () => {
+    const h = new Date().getHours();
+    if (h < 12) return "Bom dia";
+    if (h < 18) return "Boa tarde";
+    return "Boa noite";
+  };
+
+  if (carregando) {
+    return (
+      <p
+        style={{
+          textAlign: "center",
+          color: "var(--color-text-secondary)",
+          marginTop: "40px",
+        }}
+      >
+        Carregando...
+      </p>
+    );
+  }
 
   return (
     <div>
       {/* ─── HEADER ─── */}
-      <div style={styles.header}>
+      <div style={s.header}>
         <div>
-          <h2 style={styles.saudacao}>Bom dia, {usuario?.nome} 👋</h2>
-          <p style={styles.subtitulo}>Aqui está o resumo do seu negócio</p>
+          <h2 style={s.saudacao}>
+            {saudacao()}, {usuario?.nome}
+          </h2>
+          <p style={s.subtitulo}>Aqui está o resumo do seu negócio</p>
         </div>
+        <div />
       </div>
 
       {/* ─── MÉTRICAS ─── */}
-      <div style={styles.metricasGrid}>
-        <div style={styles.metricaCard}>
-          <div style={styles.metricaIconBox}>
-            <span style={styles.metricaIcon}>💰</span>
-          </div>
-          <p style={styles.metricaLabel}>Vendas hoje</p>
-          <p style={styles.metricaValor}>R$ {totalHoje.toFixed(2)}</p>
-        </div>
-        <div style={styles.metricaCard}>
-          <div style={{ ...styles.metricaIconBox, backgroundColor: "#e1f5ee" }}>
-            <span style={styles.metricaIcon}>🛒</span>
-          </div>
-          <p style={styles.metricaLabel}>Pedidos</p>
-          <p style={styles.metricaValor}>{vendasHoje.length}</p>
-        </div>
-        <div style={styles.metricaCard}>
-          <div style={{ ...styles.metricaIconBox, backgroundColor: "#eeedfe" }}>
-            <span style={styles.metricaIcon}>🎯</span>
-          </div>
-          <p style={styles.metricaLabel}>Ticket médio</p>
-          <p style={styles.metricaValor}>R$ {ticketMedio.toFixed(2)}</p>
-        </div>
-        <div style={styles.metricaCard}>
-          <div
-            style={{
-              ...styles.metricaIconBox,
-              backgroundColor: estoqueBaixo > 0 ? "#fee2e2" : "#d1fae5",
-            }}
-          >
-            <span style={styles.metricaIcon}>
-              {estoqueBaixo > 0 ? "⚠️" : "✅"}
-            </span>
-          </div>
-          <p style={styles.metricaLabel}>Estoque baixo</p>
-          <p
-            style={{
-              ...styles.metricaValor,
-              color: estoqueBaixo > 0 ? "#991b1b" : "#065f46",
-            }}
-          >
-            {estoqueBaixo}
-          </p>
-        </div>
+      <div style={s.metricasGrid}>
+        <MetricaCard
+          iconBg="var(--color-badge-blue-bg)"
+          iconColor="var(--color-badge-blue-text)"
+          Icon={DollarSign}
+          label="Vendas hoje"
+          valor={`R$ ${totalHoje.toFixed(2)}`}
+        />
+        <MetricaCard
+          iconBg="var(--color-badge-green-bg)"
+          iconColor="var(--color-badge-green-text)"
+          Icon={ShoppingCart}
+          label="Pedidos"
+          valor={vendasHoje.length}
+        />
+        <MetricaCard
+          iconBg="var(--color-badge-purple-bg)"
+          iconColor="var(--color-badge-purple-text)"
+          Icon={Receipt}
+          label="Ticket médio"
+          valor={`R$ ${ticketMedio.toFixed(2)}`}
+        />
+        <MetricaCard
+          iconBg={
+            estoqueBaixo > 0
+              ? "var(--color-warning-bg)"
+              : "var(--color-badge-green-bg)"
+          }
+          iconColor={
+            estoqueBaixo > 0
+              ? "var(--color-warning-text)"
+              : "var(--color-badge-green-text)"
+          }
+          Icon={estoqueBaixo > 0 ? AlertTriangle : CircleCheck}
+          label="Estoque baixo"
+          valor={estoqueBaixo}
+          delta={estoqueBaixo > 0 ? "produtos abaixo do mínimo" : "estoque OK"}
+          deltaColor={
+            estoqueBaixo > 0 ? "var(--color-warning)" : "var(--color-success)"
+          }
+        />
       </div>
 
       {/* ─── CONTEÚDO INFERIOR ─── */}
-      <div style={styles.bottomGrid}>
+      <div style={s.bottomGrid}>
         {/* ─── ÚLTIMAS VENDAS ─── */}
-        <div style={styles.card}>
-          <h3 style={styles.cardTitulo}>Últimas vendas</h3>
+        <div style={s.card}>
+          <h3 style={s.cardTitulo}>Últimas vendas</h3>
           {vendasHoje.length === 0 ? (
-            <p style={styles.vazio}>Nenhuma venda hoje</p>
+            <p style={s.vazio}>Nenhuma venda hoje</p>
           ) : (
             vendasHoje.slice(0, 5).map((venda) => (
-              <div key={venda.id} style={styles.vendaItem}>
+              <div key={venda.id} style={s.vendaItem}>
                 <div>
-                  <p style={styles.vendaNome}>
+                  <p style={s.vendaNome}>
                     {venda.itens
                       ?.map((i) => `${i.product?.nome} x${i.quantidade}`)
                       .join(", ")}
                   </p>
-                  <p style={styles.vendaHora}>
+                  <p style={s.vendaHora}>
                     {new Date(venda.data_venda).toLocaleTimeString("pt-BR", {
                       hour: "2-digit",
                       minute: "2-digit",
@@ -134,13 +162,9 @@ export default function Dashboard() {
                     {venda.user?.nome}
                   </p>
                 </div>
-                <div style={styles.vendaDireita}>
-                  <p style={styles.vendaValor}>
-                    R$ {venda.valor_total.toFixed(2)}
-                  </p>
-                  <span style={styles.vendaPagamento}>
-                    {venda.formaPagamento.replace("_", " ")}
-                  </span>
+                <div style={s.vendaDireita}>
+                  <p style={s.vendaValor}>R$ {venda.valor_total.toFixed(2)}</p>
+                  <BadgePagamento forma={venda.formaPagamento} />
                 </div>
               </div>
             ))
@@ -148,20 +172,25 @@ export default function Dashboard() {
         </div>
 
         {/* ─── LADO DIREITO ─── */}
-        <div style={styles.rightCol}>
+        <div style={s.rightCol}>
           {/* ─── CAIXA ─── */}
-          <div style={styles.card}>
-            <h3 style={styles.cardTitulo}>Caixa</h3>
+          <div style={s.card}>
+            <h3 style={s.cardTitulo}>Caixa</h3>
             {caixaAtual ? (
               <>
-                <div style={styles.caixaStatus}>
-                  <div style={styles.caixaDot}></div>
-                  <span style={styles.caixaTexto}>Aberto</span>
+                <div style={s.caixaStatus}>
+                  <div
+                    style={{
+                      ...s.caixaDot,
+                      backgroundColor: "var(--color-success)",
+                    }}
+                  />
+                  <span style={s.caixaTexto}>Aberto</span>
                 </div>
-                <p style={styles.caixaInfo}>
+                <p style={s.caixaInfo}>
                   Abertura: R$ {caixaAtual.valorInicial.toFixed(2)}
                 </p>
-                <p style={styles.caixaInfo}>
+                <p style={s.caixaInfo}>
                   Desde{" "}
                   {new Date(caixaAtual.abertura).toLocaleTimeString("pt-BR", {
                     hour: "2-digit",
@@ -170,27 +199,29 @@ export default function Dashboard() {
                 </p>
               </>
             ) : (
-              <div style={styles.caixaStatus}>
+              <div style={s.caixaStatus}>
                 <div
-                  style={{ ...styles.caixaDot, backgroundColor: "#991b1b" }}
-                ></div>
-                <span style={styles.caixaTexto}>Fechado</span>
+                  style={{
+                    ...s.caixaDot,
+                    backgroundColor: "var(--color-warning)",
+                  }}
+                />
+                <span style={s.caixaTexto}>Fechado</span>
               </div>
             )}
           </div>
 
           {/* ─── AÇÕES RÁPIDAS ─── */}
-          <div style={styles.card}>
-            <h3 style={styles.cardTitulo}>Ações rápidas</h3>
-            <button onClick={() => navigate("/vendas")} style={styles.acaoBtn}>
-              ➕ Nova venda
+          <div style={s.card}>
+            <h3 style={s.cardTitulo}>Ações rápidas</h3>
+            <button onClick={() => navigate("/vendas")} style={s.acaoBtn}>
+              <Plus size={14} style={s.acaoBtnIcon} aria-hidden="true" />
+              Nova venda ↗
             </button>
             {(role === "ADMIN" || role === "GERENTE") && (
-              <button
-                onClick={() => navigate("/produtos")}
-                style={styles.acaoBtn}
-              >
-                📦 Novo produto
+              <button onClick={() => navigate("/produtos")} style={s.acaoBtn}>
+                <Package size={14} style={s.acaoBtnIcon} aria-hidden="true" />
+                Novo produto ↗
               </button>
             )}
           </div>
@@ -199,85 +230,142 @@ export default function Dashboard() {
     </div>
   );
 }
-const styles = {
+
+/* ─── Sub-componentes ─── */
+
+function MetricaCard({
+  iconBg,
+  iconColor,
+  Icon,
+  label,
+  valor,
+  delta,
+  deltaColor,
+}) {
+  return (
+    <div style={s.metricaCard}>
+      <div style={{ ...s.metricaIconBox, backgroundColor: iconBg }}>
+        <Icon size={15} color={iconColor} aria-hidden="true" />
+      </div>
+      <p style={s.metricaLabel}>{label}</p>
+      <p style={s.metricaValor}>{valor}</p>
+      {delta && <p style={{ ...s.metricaDelta, color: deltaColor }}>{delta}</p>}
+    </div>
+  );
+}
+
+function BadgePagamento({ forma }) {
+  const mapa = {
+    DINHEIRO: {
+      bg: "var(--color-badge-green-bg)",
+      color: "var(--color-badge-green-text)",
+      label: "Dinheiro",
+    },
+    PIX: {
+      bg: "var(--color-badge-green-bg)",
+      color: "var(--color-badge-green-text)",
+      label: "PIX",
+    },
+    CARTAO_DEBITO: {
+      bg: "var(--color-badge-blue-bg)",
+      color: "var(--color-badge-blue-text)",
+      label: "Débito",
+    },
+    CARTAO_CREDITO: {
+      bg: "var(--color-badge-purple-bg)",
+      color: "var(--color-badge-purple-text)",
+      label: "Crédito",
+    },
+  };
+  const estilo = mapa[forma] ?? {
+    bg: "var(--color-background-tertiary)",
+    color: "var(--color-text-secondary)",
+    label: forma,
+  };
+  return (
+    <span
+      style={{ ...s.badge, backgroundColor: estilo.bg, color: estilo.color }}
+    >
+      {estilo.label}
+    </span>
+  );
+}
+
+/* ─── Estilos ─── */
+const s = {
   header: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: "28px",
+    marginBottom: "24px",
   },
   saudacao: {
-    fontSize: "22px",
-    fontWeight: "bold",
-    color: "#1a1a2e",
+    fontSize: "18px",
+    fontWeight: "500",
+    color: "var(--color-text-primary)",
     margin: "0 0 4px",
   },
   subtitulo: {
-    color: "#888",
-    fontSize: "14px",
+    color: "var(--color-text-secondary)",
+    fontSize: "13px",
     margin: 0,
-  },
-  carregando: {
-    textAlign: "center",
-    color: "#888",
-    marginTop: "40px",
   },
   metricasGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(4, 1fr)",
-    gap: "16px",
-    marginBottom: "24px",
+    gap: "12px",
+    marginBottom: "16px",
   },
   metricaCard: {
-    backgroundColor: "#fff",
-    borderRadius: "12px",
-    padding: "20px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.04)",
+    backgroundColor: "var(--color-background-primary)",
+    borderRadius: "var(--border-radius-lg)",
+    padding: "16px",
+    border: "0.5px solid var(--color-border-tertiary)",
   },
   metricaIconBox: {
-    width: "40px",
-    height: "40px",
-    borderRadius: "10px",
-    backgroundColor: "#e6f1fb",
+    width: "28px",
+    height: "28px",
+    borderRadius: "var(--border-radius-md)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: "12px",
-  },
-  metricaIcon: {
-    fontSize: "20px",
+    marginBottom: "10px",
   },
   metricaLabel: {
-    fontSize: "13px",
-    color: "#888",
-    margin: "0 0 6px",
+    fontSize: "12px",
+    color: "var(--color-text-secondary)",
+    margin: "0 0 4px",
   },
   metricaValor: {
-    fontSize: "24px",
-    fontWeight: "bold",
-    color: "#1a1a2e",
+    fontSize: "22px",
+    fontWeight: "500",
+    color: "var(--color-text-primary)",
     margin: 0,
+  },
+  metricaDelta: {
+    fontSize: "11px",
+    margin: "4px 0 0",
   },
   bottomGrid: {
     display: "grid",
     gridTemplateColumns: "1.5fr 1fr",
-    gap: "16px",
+    gap: "12px",
   },
   card: {
-    backgroundColor: "#fff",
-    borderRadius: "12px",
-    padding: "24px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.04)",
+    backgroundColor: "var(--color-background-primary)",
+    borderRadius: "var(--border-radius-lg)",
+    padding: "20px",
+    border: "0.5px solid var(--color-border-tertiary)",
   },
   cardTitulo: {
-    fontSize: "16px",
-    fontWeight: "600",
-    color: "#1a1a2e",
-    margin: "0 0 16px",
+    fontSize: "14px",
+    fontWeight: "500",
+    color: "var(--color-text-primary)",
+    margin: "0 0 14px",
   },
   vazio: {
-    color: "#888",
-    fontSize: "14px",
+    color: "var(--color-text-secondary)",
+    fontSize: "13px",
     textAlign: "center",
     padding: "20px 0",
   },
@@ -285,72 +373,77 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "12px 0",
-    borderBottom: "1px solid #f0f0f0",
+    padding: "8px 0",
+    borderBottom: "0.5px solid var(--color-border-tertiary)",
   },
   vendaNome: {
     fontSize: "13px",
-    fontWeight: "600",
-    color: "#1a1a2e",
+    fontWeight: "500",
+    color: "var(--color-text-primary)",
     margin: 0,
   },
   vendaHora: {
     fontSize: "11px",
-    color: "#888",
-    margin: "4px 0 0",
+    color: "var(--color-text-secondary)",
+    margin: "2px 0 0",
   },
   vendaDireita: {
     textAlign: "right",
   },
   vendaValor: {
-    fontSize: "14px",
-    fontWeight: "bold",
-    color: "#1a1a2e",
-    margin: "0 0 4px",
+    fontSize: "13px",
+    fontWeight: "500",
+    color: "var(--color-text-primary)",
+    margin: "0 0 3px",
   },
-  vendaPagamento: {
+  badge: {
     fontSize: "11px",
     padding: "2px 8px",
-    borderRadius: "12px",
-    backgroundColor: "#e0e7ff",
-    color: "#4338ca",
+    borderRadius: "var(--border-radius-md)",
+    display: "inline-block",
   },
   rightCol: {
     display: "flex",
     flexDirection: "column",
-    gap: "16px",
+    gap: "12px",
   },
   caixaStatus: {
     display: "flex",
     alignItems: "center",
     gap: "8px",
+    marginBottom: "6px",
   },
   caixaDot: {
-    width: "10px",
-    height: "10px",
+    width: "8px",
+    height: "8px",
     borderRadius: "50%",
-    backgroundColor: "#065f46",
   },
   caixaTexto: {
-    fontSize: "14px",
-    fontWeight: "600",
-    color: "#1a1a2e",
+    fontSize: "13px",
+    color: "var(--color-text-primary)",
   },
   caixaInfo: {
-    fontSize: "13px",
-    color: "#888",
-    margin: "6px 0 0",
+    fontSize: "12px",
+    color: "var(--color-text-secondary)",
+    margin: "4px 0 0",
   },
   acaoBtn: {
     width: "100%",
-    padding: "10px 16px",
-    backgroundColor: "#f8f9fa",
-    border: "1px solid #e0e0e0",
-    borderRadius: "8px",
+    padding: "8px 12px",
+    backgroundColor: "var(--color-background-secondary)",
+    border: "0.5px solid var(--color-border-primary)",
+    borderRadius: "var(--border-radius-md)",
     cursor: "pointer",
     fontSize: "13px",
     textAlign: "left",
     marginBottom: "8px",
-    color: "#1a1a2e",
+    color: "var(--color-text-primary)",
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    fontFamily: "inherit",
+  },
+  acaoBtnIcon: {
+    flexShrink: 0,
   },
 };

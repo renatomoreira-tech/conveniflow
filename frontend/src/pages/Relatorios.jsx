@@ -1,5 +1,6 @@
 import { useState } from "react";
 import api from "../services/api";
+import { BarChart3 } from "lucide-react";
 
 export default function Relatorios() {
   const [inicio, setInicio] = useState("");
@@ -26,67 +27,67 @@ export default function Relatorios() {
   }
 
   return (
-    <div style={styles.container}>
+    <div style={s.container}>
       {/* ─── HEADER ─── */}
-      <div style={styles.header}>
-        <div>
-          <h2 style={styles.titulo}>📊 Relatórios de Vendas</h2>
-        </div>
+      <div style={s.header}>
+        <h2 style={s.titulo}>
+          <BarChart3 size={20} style={s.tituloIcon} aria-hidden="true" />
+          Relatórios de Vendas
+        </h2>
       </div>
 
       {/* ─── FILTROS ─── */}
-      <div style={styles.filtroCard}>
-        <h3 style={styles.filtroTitulo}>Selecione o período</h3>
-        <div style={styles.filtroGrid}>
-          <div style={styles.campo}>
-            <label style={styles.label}>Data inicial</label>
+      <div style={s.filtroCard}>
+        <h3 style={s.filtroTitulo}>Selecione o período</h3>
+        <div style={s.filtroGrid}>
+          <div style={s.campo}>
+            <label style={s.label}>Data inicial</label>
             <input
               type="date"
               value={inicio}
               onChange={(e) => setInicio(e.target.value)}
-              style={styles.input}
+              style={s.input}
             />
           </div>
-          <div style={styles.campo}>
-            <label style={styles.label}>Data final</label>
+          <div style={s.campo}>
+            <label style={s.label}>Data final</label>
             <input
               type="date"
               value={fim}
               onChange={(e) => setFim(e.target.value)}
-              style={styles.input}
+              style={s.input}
             />
           </div>
-          <div style={styles.campoBotao}>
+          <div style={s.campoBotao}>
             <button
               onClick={buscarRelatorio}
-              style={styles.botaoBuscar}
+              style={s.botaoBuscar}
               disabled={carregando}
             >
               {carregando ? "Buscando..." : "Buscar"}
             </button>
           </div>
         </div>
-        {erro && <p style={styles.erro}>{erro}</p>}
+        {erro && <p style={s.erro}>{erro}</p>}
       </div>
 
       {/* ─── RESULTADOS ─── */}
       {dados && (
         <>
-          {/* ─── CARDS DE RESUMO ─── */}
-          <div style={styles.resumoGrid}>
-            <div style={styles.resumoCard}>
-              <p style={styles.resumoLabel}>Total de Vendas</p>
-              <p style={styles.resumoValor}>{dados.quantidade}</p>
+          <div style={s.resumoGrid}>
+            <div style={s.resumoCard}>
+              <p style={s.resumoLabel}>Total de Vendas</p>
+              <p style={s.resumoValor}>{dados.quantidade}</p>
             </div>
-            <div style={styles.resumoCard}>
-              <p style={styles.resumoLabel}>Faturamento Total</p>
-              <p style={styles.resumoValorDestaque}>
+            <div style={s.resumoCard}>
+              <p style={s.resumoLabel}>Faturamento Total</p>
+              <p style={s.resumoValorDestaque}>
                 R$ {dados.totalPeriodo.toFixed(2)}
               </p>
             </div>
-            <div style={styles.resumoCard}>
-              <p style={styles.resumoLabel}>Ticket Médio</p>
-              <p style={styles.resumoValor}>
+            <div style={s.resumoCard}>
+              <p style={s.resumoLabel}>Ticket Médio</p>
+              <p style={s.resumoValor}>
                 R${" "}
                 {dados.quantidade > 0
                   ? (dados.totalPeriodo / dados.quantidade).toFixed(2)
@@ -95,59 +96,55 @@ export default function Relatorios() {
             </div>
           </div>
 
-          {/* ─── TABELA DE VENDAS ─── */}
           {dados.sales.length === 0 ? (
-            <div style={styles.vazio}>
+            <div style={s.vazio}>
               <p>Nenhuma venda encontrada no período selecionado.</p>
             </div>
           ) : (
-            <div style={styles.tabelaContainer}>
-              <h3 style={styles.tabelaTitulo}>Detalhamento das Vendas</h3>
-              <table style={styles.tabela}>
+            <div style={s.tabelaContainer}>
+              <h3 style={s.tabelaTitulo}>Detalhamento das Vendas</h3>
+              <table style={s.tabela}>
                 <thead>
-                  <tr style={styles.thead}>
-                    <th style={styles.th}>#</th>
-                    <th style={styles.th}>Data</th>
-                    <th style={styles.th}>Operador</th>
-                    <th style={styles.th}>Itens</th>
-                    <th style={styles.th}>Pagamento</th>
-                    <th style={styles.th}>Desconto</th>
-                    <th style={styles.th}>Total</th>
+                  <tr style={s.thead}>
+                    <th style={s.th}>#</th>
+                    <th style={s.th}>Data</th>
+                    <th style={s.th}>Operador</th>
+                    <th style={s.th}>Itens</th>
+                    <th style={s.th}>Pagamento</th>
+                    <th style={s.th}>Desconto</th>
+                    <th style={s.th}>Total</th>
                   </tr>
                 </thead>
                 <tbody>
                   {dados.sales.map((venda) => (
-                    <tr key={venda.id} style={styles.tr}>
-                      <td style={styles.td}>#{venda.id}</td>
-                      <td style={styles.td}>
+                    <tr key={venda.id} style={s.tr}>
+                      <td style={s.td}>#{venda.id}</td>
+                      <td style={s.td}>
                         {new Date(venda.data_venda).toLocaleDateString("pt-BR")}{" "}
                         {new Date(venda.data_venda).toLocaleTimeString(
                           "pt-BR",
-                          {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          },
+                          { hour: "2-digit", minute: "2-digit" },
                         )}
                       </td>
-                      <td style={styles.td}>{venda.user?.nome || "—"}</td>
-                      <td style={styles.td}>
+                      <td style={s.td}>{venda.user?.nome || "—"}</td>
+                      <td style={s.td}>
                         {venda.itens.map((item) => (
-                          <div key={item.id} style={styles.item}>
+                          <div key={item.id} style={s.item}>
                             {item.product?.nome} x{item.quantidade}
                           </div>
                         ))}
                       </td>
-                      <td style={styles.td}>
-                        <span style={styles.pagamento}>
+                      <td style={s.td}>
+                        <span style={s.pagamento}>
                           {venda.formaPagamento.replace("_", " ")}
                         </span>
                       </td>
-                      <td style={styles.td}>
+                      <td style={s.td}>
                         {venda.desconto > 0
                           ? `R$ ${venda.desconto.toFixed(2)}`
                           : "—"}
                       </td>
-                      <td style={styles.td}>
+                      <td style={s.td}>
                         <strong>R$ {venda.valor_total.toFixed(2)}</strong>
                       </td>
                     </tr>
@@ -162,132 +159,152 @@ export default function Relatorios() {
   );
 }
 
-const styles = {
+const s = {
   container: { padding: "0" },
   header: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: "24px",
+    marginBottom: "20px",
   },
-  headerEsquerda: { display: "flex", alignItems: "center", gap: "16px" },
-  botaoVoltar: {
-    backgroundColor: "#fff",
-    border: "1px solid #ddd",
-    borderRadius: "8px",
-    padding: "8px 16px",
-    cursor: "pointer",
-    fontSize: "14px",
+  titulo: {
+    fontSize: "18px",
+    fontWeight: "500",
+    color: "var(--color-text-primary)",
+    margin: 0,
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
   },
-  titulo: { fontSize: "22px", fontWeight: "bold", color: "#1a1a2e", margin: 0 },
+  tituloIcon: { color: "var(--color-text-secondary)" },
   filtroCard: {
-    backgroundColor: "#fff",
-    borderRadius: "12px",
-    padding: "24px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
-    marginBottom: "24px",
+    backgroundColor: "var(--color-background-primary)",
+    borderRadius: "var(--border-radius-lg)",
+    border: "0.5px solid var(--color-border-tertiary)",
+    padding: "20px",
+    marginBottom: "20px",
   },
   filtroTitulo: {
-    fontSize: "16px",
-    fontWeight: "600",
-    color: "#1a1a2e",
-    marginBottom: "16px",
+    fontSize: "14px",
+    fontWeight: "500",
+    color: "var(--color-text-primary)",
+    marginBottom: "14px",
   },
   filtroGrid: {
     display: "flex",
-    gap: "16px",
+    gap: "14px",
     alignItems: "flex-end",
     flexWrap: "wrap",
   },
   campo: { display: "flex", flexDirection: "column", gap: "6px" },
   campoBotao: { display: "flex", alignItems: "flex-end" },
-  label: { fontSize: "13px", fontWeight: "600", color: "#555" },
+  label: {
+    fontSize: "12px",
+    fontWeight: "500",
+    color: "var(--color-text-secondary)",
+  },
   input: {
-    padding: "10px 12px",
-    borderRadius: "8px",
-    border: "1px solid #ddd",
-    fontSize: "14px",
+    padding: "9px 12px",
+    borderRadius: "var(--border-radius-md)",
+    border: "0.5px solid var(--color-border-primary)",
+    fontSize: "13px",
+    backgroundColor: "var(--color-background-secondary)",
+    color: "var(--color-text-primary)",
+    fontFamily: "inherit",
   },
   botaoBuscar: {
-    backgroundColor: "#4f46e5",
-    color: "#fff",
+    backgroundColor: "var(--color-text-info)",
+    color: "#ffffff",
     border: "none",
-    borderRadius: "8px",
-    padding: "10px 24px",
+    borderRadius: "var(--border-radius-md)",
+    padding: "9px 22px",
     cursor: "pointer",
-    fontWeight: "600",
-    fontSize: "14px",
+    fontWeight: "500",
+    fontSize: "13px",
+    fontFamily: "inherit",
   },
-  erro: { color: "#e53e3e", fontSize: "14px", marginTop: "12px" },
+  erro: {
+    color: "var(--color-danger-text)",
+    fontSize: "13px",
+    marginTop: "12px",
+  },
   resumoGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-    gap: "16px",
-    marginBottom: "24px",
+    gap: "12px",
+    marginBottom: "20px",
   },
   resumoCard: {
-    backgroundColor: "#fff",
-    borderRadius: "12px",
-    padding: "24px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
+    backgroundColor: "var(--color-background-primary)",
+    borderRadius: "var(--border-radius-lg)",
+    border: "0.5px solid var(--color-border-tertiary)",
+    padding: "20px",
     textAlign: "center",
   },
-  resumoLabel: { fontSize: "13px", color: "#888", margin: "0 0 8px" },
+  resumoLabel: {
+    fontSize: "12px",
+    color: "var(--color-text-secondary)",
+    margin: "0 0 8px",
+  },
   resumoValor: {
-    fontSize: "28px",
-    fontWeight: "bold",
-    color: "#1a1a2e",
+    fontSize: "24px",
+    fontWeight: "500",
+    color: "var(--color-text-primary)",
     margin: 0,
   },
   resumoValorDestaque: {
-    fontSize: "28px",
-    fontWeight: "bold",
-    color: "#4f46e5",
+    fontSize: "24px",
+    fontWeight: "500",
+    color: "var(--color-text-info)",
     margin: 0,
   },
   tabelaContainer: {
-    backgroundColor: "#fff",
-    borderRadius: "12px",
-    padding: "24px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
+    backgroundColor: "var(--color-background-primary)",
+    borderRadius: "var(--border-radius-lg)",
+    border: "0.5px solid var(--color-border-tertiary)",
+    padding: "20px",
   },
   tabelaTitulo: {
-    fontSize: "16px",
-    fontWeight: "600",
-    color: "#1a1a2e",
-    marginBottom: "16px",
+    fontSize: "14px",
+    fontWeight: "500",
+    color: "var(--color-text-primary)",
+    marginBottom: "14px",
   },
   tabela: { width: "100%", borderCollapse: "collapse" },
-  thead: { backgroundColor: "#f8f9fa" },
+  thead: { backgroundColor: "var(--color-background-secondary)" },
   th: {
-    padding: "14px 16px",
+    padding: "12px 16px",
     textAlign: "left",
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#555",
+    fontSize: "12px",
+    fontWeight: "500",
+    color: "var(--color-text-secondary)",
   },
-  tr: { borderTop: "1px solid #f0f0f0" },
+  tr: { borderTop: "0.5px solid var(--color-border-tertiary)" },
   td: {
-    padding: "14px 16px",
-    fontSize: "14px",
-    color: "#333",
+    padding: "12px 16px",
+    fontSize: "13px",
+    color: "var(--color-text-primary)",
     verticalAlign: "top",
   },
-  item: { fontSize: "13px", color: "#555", marginBottom: "2px" },
-  pagamento: {
-    backgroundColor: "#e0e7ff",
-    color: "#4338ca",
-    padding: "4px 10px",
-    borderRadius: "20px",
+  item: {
     fontSize: "12px",
-    fontWeight: "600",
+    color: "var(--color-text-secondary)",
+    marginBottom: "2px",
+  },
+  pagamento: {
+    backgroundColor: "var(--color-badge-blue-bg)",
+    color: "var(--color-badge-blue-text)",
+    padding: "3px 10px",
+    borderRadius: "20px",
+    fontSize: "11px",
+    fontWeight: "500",
   },
   vazio: {
-    backgroundColor: "#fff",
-    borderRadius: "12px",
+    backgroundColor: "var(--color-background-primary)",
+    borderRadius: "var(--border-radius-lg)",
+    border: "0.5px solid var(--color-border-tertiary)",
     padding: "40px",
     textAlign: "center",
-    color: "#888",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
+    color: "var(--color-text-secondary)",
   },
 };

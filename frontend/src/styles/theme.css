@@ -1,0 +1,127 @@
+/* =============================================
+   ConveniFlow — Sistema de Tema
+   Aplique [data-theme="dark"] no <html> para dark mode
+   ============================================= */
+
+:root {
+  /* Fundos */
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f8f7f4;
+  --color-background-tertiary: #f1efe8;
+  --color-background-info: #e6f1fb;
+
+  /* Textos */
+  --color-text-primary: #1a1a18;
+  --color-text-secondary: #5f5e5a;
+  --color-text-muted: #888780;
+  --color-text-info: #185fa5;
+
+  /* Bordas */
+  --color-border-primary: rgba(0, 0, 0, 0.12);
+  --color-border-secondary: rgba(0, 0, 0, 0.08);
+  --color-border-tertiary: rgba(0, 0, 0, 0.07);
+
+  /* Status — mantém contraste em ambos os modos */
+  --color-success: #1d9e75;
+  --color-success-bg: #e1f5ee;
+  --color-success-text: #0f6e56;
+
+  --color-warning: #d85a30;
+  --color-warning-bg: #faece7;
+  --color-warning-text: #993c1d;
+
+  --color-danger: #e24b4a;
+  --color-danger-bg: #fcebeb;
+  --color-danger-text: #a32d2d;
+
+  /* Badges de pagamento */
+  --color-badge-blue-bg: #e6f1fb;
+  --color-badge-blue-text: #185fa5;
+  --color-badge-purple-bg: #eeedfe;
+  --color-badge-purple-text: #534ab7;
+  --color-badge-green-bg: #e1f5ee;
+  --color-badge-green-text: #0f6e56;
+
+  /* Radii */
+  --border-radius-sm: 4px;
+  --border-radius-md: 6px;
+  --border-radius-lg: 10px;
+  --border-radius-xl: 14px;
+
+  /* Transição suave */
+  --theme-transition:
+    background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+[data-theme="dark"] {
+  /* Fundos */
+  --color-background-primary: #23231f;
+  --color-background-secondary: #1a1a17;
+  --color-background-tertiary: #141412;
+  --color-background-info: #0c2e4e;
+
+  /* Textos */
+  --color-text-primary: #e8e6df;
+  --color-text-secondary: #888780;
+  --color-text-muted: #5f5e5a;
+  --color-text-info: #85b7eb;
+
+  /* Bordas */
+  --color-border-primary: rgba(255, 255, 255, 0.12);
+  --color-border-secondary: rgba(255, 255, 255, 0.08);
+  --color-border-tertiary: rgba(255, 255, 255, 0.07);
+
+  /* Status */
+  --color-success-bg: #04342c;
+  --color-success-text: #5dcaa5;
+
+  --color-warning-bg: #4a1b0c;
+  --color-warning-text: #f0997b;
+
+  --color-danger-bg: #501313;
+  --color-danger-text: #f09595;
+
+  /* Badges de pagamento */
+  --color-badge-blue-bg: #042c53;
+  --color-badge-blue-text: #85b7eb;
+  --color-badge-purple-bg: #26215c;
+  --color-badge-purple-text: #afa9ec;
+  --color-badge-green-bg: #04342c;
+  --color-badge-green-text: #5dcaa5;
+}
+
+/* Respeita preferência do sistema caso o usuário não tenha escolhido */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-background-primary: #23231f;
+    --color-background-secondary: #1a1a17;
+    --color-background-tertiary: #141412;
+    --color-background-info: #0c2e4e;
+    --color-text-primary: #e8e6df;
+    --color-text-secondary: #888780;
+    --color-text-muted: #5f5e5a;
+    --color-text-info: #85b7eb;
+    --color-border-primary: rgba(255, 255, 255, 0.12);
+    --color-border-secondary: rgba(255, 255, 255, 0.08);
+    --color-border-tertiary: rgba(255, 255, 255, 0.07);
+    --color-success-bg: #04342c;
+    --color-success-text: #5dcaa5;
+    --color-warning-bg: #4a1b0c;
+    --color-warning-text: #f0997b;
+    --color-danger-bg: #501313;
+    --color-danger-text: #f09595;
+    --color-badge-blue-bg: #042c53;
+    --color-badge-blue-text: #85b7eb;
+    --color-badge-purple-bg: #26215c;
+    --color-badge-purple-text: #afa9ec;
+    --color-badge-green-bg: #04342c;
+    --color-badge-green-text: #5dcaa5;
+  }
+}
+
+/* Helper global para transição suave em todos os elementos */
+*,
+*::before,
+*::after {
+  transition: var(--theme-transition);
+}

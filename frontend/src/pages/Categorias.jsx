@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "../services/api";
+import { Tag, Plus } from "lucide-react";
 
 export default function Categorias() {
   const [categorias, setCategorias] = useState([]);
@@ -64,54 +65,54 @@ export default function Categorias() {
     }
   }
 
-  if (carregando) return <p style={styles.carregando}>Carregando...</p>;
+  if (carregando) return <p style={s.carregando}>Carregando...</p>;
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <div>
-          <h2 style={styles.titulo}>🏷️ Categorias</h2>
-        </div>
-        <button onClick={() => abrirModal()} style={styles.botaoNovo}>
-          + Nova Categoria
+    <div style={s.container}>
+      <div style={s.header}>
+        <h2 style={s.titulo}>
+          <Tag size={20} style={s.tituloIcon} aria-hidden="true" />
+          Categorias
+        </h2>
+        <button onClick={() => abrirModal()} style={s.botaoNovo}>
+          <Plus size={14} aria-hidden="true" />
+          Nova Categoria
         </button>
       </div>
 
-      <div style={styles.tabelaContainer}>
-        <table style={styles.tabela}>
+      <div style={s.tabelaContainer}>
+        <table style={s.tabela}>
           <thead>
-            <tr style={styles.thead}>
-              <th style={styles.th}>Nome</th>
-              <th style={styles.th}>Produtos</th>
-              <th style={styles.th}>Ações</th>
+            <tr style={s.thead}>
+              <th style={s.th}>Nome</th>
+              <th style={s.th}>Produtos</th>
+              <th style={s.th}>Ações</th>
             </tr>
           </thead>
           <tbody>
             {categorias.length === 0 ? (
               <tr>
-                <td colSpan="3" style={styles.vazio}>
+                <td colSpan="3" style={s.vazio}>
                   Nenhuma categoria cadastrada
                 </td>
               </tr>
             ) : (
               categorias.map((cat) => (
-                <tr key={cat.id} style={styles.tr}>
-                  <td style={styles.td}>{cat.nome}</td>
-                  <td style={styles.td}>
-                    <span style={styles.badge}>
-                      {cat._count?.produtos || 0}
-                    </span>
+                <tr key={cat.id} style={s.tr}>
+                  <td style={s.td}>{cat.nome}</td>
+                  <td style={s.td}>
+                    <span style={s.badge}>{cat._count?.produtos || 0}</span>
                   </td>
-                  <td style={styles.td}>
+                  <td style={s.td}>
                     <button
                       onClick={() => abrirModal(cat)}
-                      style={styles.botaoEditar}
+                      style={s.botaoEditar}
                     >
                       Editar
                     </button>
                     <button
                       onClick={() => handleDeletar(cat.id)}
-                      style={styles.botaoDeletar}
+                      style={s.botaoDeletar}
                     >
                       Excluir
                     </button>
@@ -124,29 +125,29 @@ export default function Categorias() {
       </div>
 
       {modalAberto && (
-        <div style={styles.overlay}>
-          <div style={styles.modal}>
-            <h3 style={styles.modalTitulo}>
+        <div style={s.overlay} onClick={() => setModalAberto(false)}>
+          <div style={s.modal} onClick={(e) => e.stopPropagation()}>
+            <h3 style={s.modalTitulo}>
               {editando ? "Editar Categoria" : "Nova Categoria"}
             </h3>
-            <div style={styles.campo}>
-              <label style={styles.label}>Nome</label>
+            <div style={s.campo}>
+              <label style={s.label}>Nome</label>
               <input
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
-                style={styles.input}
+                style={s.input}
                 placeholder="Ex: Bebidas, Snacks..."
               />
             </div>
-            {erro && <p style={styles.erro}>{erro}</p>}
-            <div style={styles.modalBotoes}>
+            {erro && <p style={s.erro}>{erro}</p>}
+            <div style={s.modalBotoes}>
               <button
                 onClick={() => setModalAberto(false)}
-                style={styles.botaoCancelar}
+                style={s.botaoCancelar}
               >
                 Cancelar
               </button>
-              <button onClick={handleSalvar} style={styles.botaoSalvar}>
+              <button onClick={handleSalvar} style={s.botaoSalvar}>
                 Salvar
               </button>
             </div>
@@ -157,70 +158,93 @@ export default function Categorias() {
   );
 }
 
-const styles = {
+const s = {
   container: { padding: "0" },
   header: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: "24px",
+    marginBottom: "20px",
   },
-
-  titulo: { fontSize: "22px", fontWeight: "bold", color: "#1a1a2e", margin: 0 },
+  titulo: {
+    fontSize: "18px",
+    fontWeight: "500",
+    color: "var(--color-text-primary)",
+    margin: 0,
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  },
+  tituloIcon: { color: "var(--color-text-secondary)" },
   botaoNovo: {
-    backgroundColor: "#4f46e5",
-    color: "#fff",
+    backgroundColor: "var(--color-text-info)",
+    color: "#ffffff",
     border: "none",
-    borderRadius: "8px",
-    padding: "10px 20px",
+    borderRadius: "var(--border-radius-md)",
+    padding: "9px 16px",
     cursor: "pointer",
-    fontWeight: "600",
+    fontWeight: "500",
+    fontSize: "13px",
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    fontFamily: "inherit",
   },
   tabelaContainer: {
-    backgroundColor: "#fff",
-    borderRadius: "12px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
+    backgroundColor: "var(--color-background-primary)",
+    borderRadius: "var(--border-radius-lg)",
+    border: "0.5px solid var(--color-border-tertiary)",
     overflow: "hidden",
   },
   tabela: { width: "100%", borderCollapse: "collapse" },
-  thead: { backgroundColor: "#f8f9fa" },
+  thead: { backgroundColor: "var(--color-background-secondary)" },
   th: {
-    padding: "14px 16px",
+    padding: "12px 16px",
     textAlign: "left",
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#555",
-  },
-  tr: { borderTop: "1px solid #f0f0f0" },
-  td: { padding: "14px 16px", fontSize: "14px", color: "#333" },
-  badge: {
-    backgroundColor: "#e0e7ff",
-    color: "#4338ca",
-    padding: "4px 10px",
-    borderRadius: "20px",
     fontSize: "12px",
-    fontWeight: "600",
+    fontWeight: "500",
+    color: "var(--color-text-secondary)",
+  },
+  tr: { borderTop: "0.5px solid var(--color-border-tertiary)" },
+  td: {
+    padding: "12px 16px",
+    fontSize: "13px",
+    color: "var(--color-text-primary)",
+  },
+  badge: {
+    backgroundColor: "var(--color-badge-purple-bg)",
+    color: "var(--color-badge-purple-text)",
+    padding: "3px 10px",
+    borderRadius: "20px",
+    fontSize: "11px",
+    fontWeight: "500",
   },
   botaoEditar: {
-    backgroundColor: "#4f46e5",
-    color: "#fff",
+    backgroundColor: "var(--color-text-info)",
+    color: "#ffffff",
     border: "none",
-    borderRadius: "6px",
-    padding: "6px 12px",
+    borderRadius: "var(--border-radius-sm)",
+    padding: "5px 11px",
     cursor: "pointer",
     marginRight: "8px",
     fontSize: "12px",
+    fontFamily: "inherit",
   },
   botaoDeletar: {
-    backgroundColor: "#fee2e2",
-    color: "#991b1b",
+    backgroundColor: "var(--color-danger-bg)",
+    color: "var(--color-danger-text)",
     border: "none",
-    borderRadius: "6px",
-    padding: "6px 12px",
+    borderRadius: "var(--border-radius-sm)",
+    padding: "5px 11px",
     cursor: "pointer",
     fontSize: "12px",
+    fontFamily: "inherit",
   },
-  vazio: { padding: "40px", textAlign: "center", color: "#888" },
+  vazio: {
+    padding: "40px",
+    textAlign: "center",
+    color: "var(--color-text-secondary)",
+  },
   overlay: {
     position: "fixed",
     inset: 0,
@@ -231,17 +255,18 @@ const styles = {
     zIndex: 1000,
   },
   modal: {
-    backgroundColor: "#fff",
-    borderRadius: "12px",
-    padding: "32px",
+    backgroundColor: "var(--color-background-primary)",
+    borderRadius: "var(--border-radius-lg)",
+    border: "0.5px solid var(--color-border-tertiary)",
+    padding: "28px",
     width: "100%",
     maxWidth: "400px",
   },
   modalTitulo: {
-    fontSize: "18px",
-    fontWeight: "bold",
-    color: "#1a1a2e",
-    marginBottom: "24px",
+    fontSize: "16px",
+    fontWeight: "500",
+    color: "var(--color-text-primary)",
+    marginBottom: "20px",
   },
   campo: {
     display: "flex",
@@ -249,31 +274,50 @@ const styles = {
     gap: "6px",
     marginBottom: "16px",
   },
-  label: { fontSize: "13px", fontWeight: "600", color: "#555" },
-  input: {
-    padding: "10px 12px",
-    borderRadius: "8px",
-    border: "1px solid #ddd",
-    fontSize: "14px",
+  label: {
+    fontSize: "12px",
+    fontWeight: "500",
+    color: "var(--color-text-secondary)",
   },
-  erro: { color: "#e53e3e", fontSize: "14px", marginBottom: "12px" },
-  modalBotoes: { display: "flex", justifyContent: "flex-end", gap: "12px" },
+  input: {
+    padding: "9px 12px",
+    borderRadius: "var(--border-radius-md)",
+    border: "0.5px solid var(--color-border-primary)",
+    fontSize: "13px",
+    backgroundColor: "var(--color-background-secondary)",
+    color: "var(--color-text-primary)",
+    fontFamily: "inherit",
+  },
+  erro: {
+    color: "var(--color-danger-text)",
+    fontSize: "13px",
+    marginBottom: "12px",
+  },
+  modalBotoes: { display: "flex", justifyContent: "flex-end", gap: "10px" },
   botaoCancelar: {
-    backgroundColor: "#f0f0f0",
-    color: "#333",
-    border: "none",
-    borderRadius: "8px",
-    padding: "10px 20px",
+    backgroundColor: "var(--color-background-secondary)",
+    color: "var(--color-text-primary)",
+    border: "0.5px solid var(--color-border-primary)",
+    borderRadius: "var(--border-radius-md)",
+    padding: "9px 18px",
     cursor: "pointer",
+    fontSize: "13px",
+    fontFamily: "inherit",
   },
   botaoSalvar: {
-    backgroundColor: "#4f46e5",
-    color: "#fff",
+    backgroundColor: "var(--color-text-info)",
+    color: "#ffffff",
     border: "none",
-    borderRadius: "8px",
-    padding: "10px 20px",
+    borderRadius: "var(--border-radius-md)",
+    padding: "9px 18px",
     cursor: "pointer",
-    fontWeight: "600",
+    fontWeight: "500",
+    fontSize: "13px",
+    fontFamily: "inherit",
   },
-  carregando: { textAlign: "center", marginTop: "40px", color: "#888" },
+  carregando: {
+    textAlign: "center",
+    marginTop: "40px",
+    color: "var(--color-text-secondary)",
+  },
 };

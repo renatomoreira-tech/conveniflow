@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "../services/api";
+import { Wallet } from "lucide-react";
 
 export default function Caixa() {
   const [caixas, setCaixas] = useState([]);
@@ -62,21 +63,24 @@ export default function Caixa() {
     }
   }
 
-  if (carregando) return <p style={styles.carregando}>Carregando...</p>;
+  if (carregando) return <p style={s.carregando}>Carregando...</p>;
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h2 style={styles.titulo}>📦 Controle de Caixa</h2>
+    <div style={s.container}>
+      <div style={s.header}>
+        <h2 style={s.titulo}>
+          <Wallet size={20} style={s.tituloIcon} aria-hidden="true" />
+          Controle de Caixa
+        </h2>
       </div>
 
       {/* ─── CAIXA ATUAL ─── */}
-      <div style={styles.caixaCard}>
+      <div style={s.caixaCard}>
         {caixaAtual ? (
           <>
-            <div style={styles.caixaStatus}>
-              <span style={styles.statusAberto}>CAIXA ABERTO</span>
-              <span style={styles.caixaInfo}>
+            <div style={s.caixaStatus}>
+              <span style={s.statusAberto}>CAIXA ABERTO</span>
+              <span style={s.caixaInfo}>
                 Aberto em{" "}
                 {new Date(caixaAtual.abertura).toLocaleDateString("pt-BR")} às{" "}
                 {new Date(caixaAtual.abertura).toLocaleTimeString("pt-BR", {
@@ -85,92 +89,92 @@ export default function Caixa() {
                 })}
               </span>
             </div>
-            <p style={styles.valorInicialTexto}>
+            <p style={s.valorInicialTexto}>
               Valor inicial:{" "}
               <strong>R$ {caixaAtual.valorInicial.toFixed(2)}</strong>
             </p>
-            <div style={styles.fecharBox}>
+            <div style={s.fecharBox}>
               <input
                 type="number"
                 placeholder="Valor final em caixa"
                 value={valorFinal}
                 onChange={(e) => setValorFinal(e.target.value)}
-                style={styles.inputFechar}
+                style={s.inputFechar}
               />
-              <button onClick={handleFecharCaixa} style={styles.botaoFechar}>
+              <button onClick={handleFecharCaixa} style={s.botaoFechar}>
                 Fechar Caixa
               </button>
             </div>
           </>
         ) : (
           <>
-            <div style={styles.caixaStatus}>
-              <span style={styles.statusFechado}>CAIXA FECHADO</span>
+            <div style={s.caixaStatus}>
+              <span style={s.statusFechado}>CAIXA FECHADO</span>
             </div>
-            <div style={styles.abrirBox}>
+            <div style={s.abrirBox}>
               <input
                 type="number"
                 placeholder="Valor inicial em caixa"
                 value={valorInicial}
                 onChange={(e) => setValorInicial(e.target.value)}
-                style={styles.inputAbrir}
+                style={s.inputAbrir}
               />
-              <button onClick={handleAbrirCaixa} style={styles.botaoAbrir}>
+              <button onClick={handleAbrirCaixa} style={s.botaoAbrir}>
                 Abrir Caixa
               </button>
             </div>
           </>
         )}
-        {erro && <p style={styles.erro}>{erro}</p>}
+        {erro && <p style={s.erro}>{erro}</p>}
       </div>
 
       {/* ─── HISTÓRICO ─── */}
-      <div style={styles.tabelaContainer}>
-        <h3 style={styles.tabelaTitulo}>Histórico de Caixas</h3>
-        <table style={styles.tabela}>
+      <div style={s.tabelaContainer}>
+        <h3 style={s.tabelaTitulo}>Histórico de Caixas</h3>
+        <table style={s.tabela}>
           <thead>
-            <tr style={styles.thead}>
-              <th style={styles.th}>Abertura</th>
-              <th style={styles.th}>Fechamento</th>
-              <th style={styles.th}>Valor Inicial</th>
-              <th style={styles.th}>Valor Final</th>
-              <th style={styles.th}>Diferença</th>
-              <th style={styles.th}>Status</th>
+            <tr style={s.thead}>
+              <th style={s.th}>Abertura</th>
+              <th style={s.th}>Fechamento</th>
+              <th style={s.th}>Valor Inicial</th>
+              <th style={s.th}>Valor Final</th>
+              <th style={s.th}>Diferença</th>
+              <th style={s.th}>Status</th>
             </tr>
           </thead>
           <tbody>
             {caixas.length === 0 ? (
               <tr>
-                <td colSpan="6" style={styles.vazio}>
+                <td colSpan="6" style={s.vazio}>
                   Nenhum registro de caixa
                 </td>
               </tr>
             ) : (
               caixas.map((c) => (
-                <tr key={c.id} style={styles.tr}>
-                  <td style={styles.td}>
+                <tr key={c.id} style={s.tr}>
+                  <td style={s.td}>
                     {new Date(c.abertura).toLocaleDateString("pt-BR")}{" "}
                     {new Date(c.abertura).toLocaleTimeString("pt-BR", {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
                   </td>
-                  <td style={styles.td}>
+                  <td style={s.td}>
                     {c.fechamento
                       ? `${new Date(c.fechamento).toLocaleDateString("pt-BR")} ${new Date(c.fechamento).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`
                       : "—"}
                   </td>
-                  <td style={styles.td}>R$ {c.valorInicial.toFixed(2)}</td>
-                  <td style={styles.td}>
+                  <td style={s.td}>R$ {c.valorInicial.toFixed(2)}</td>
+                  <td style={s.td}>
                     {c.valorFinal ? `R$ ${c.valorFinal.toFixed(2)}` : "—"}
                   </td>
-                  <td style={styles.td}>
+                  <td style={s.td}>
                     {c.valorFinal ? (
                       <span
                         style={
                           c.valorFinal - c.valorInicial >= 0
-                            ? styles.positivo
-                            : styles.negativo
+                            ? s.positivo
+                            : s.negativo
                         }
                       >
                         R$ {(c.valorFinal - c.valorInicial).toFixed(2)}
@@ -179,12 +183,10 @@ export default function Caixa() {
                       "—"
                     )}
                   </td>
-                  <td style={styles.td}>
+                  <td style={s.td}>
                     <span
                       style={
-                        c.status === "ABERTO"
-                          ? styles.statusAberto
-                          : styles.statusFechado
+                        c.status === "ABERTO" ? s.statusAberto : s.statusFechado
                       }
                     >
                       {c.status}
@@ -200,107 +202,145 @@ export default function Caixa() {
   );
 }
 
-const styles = {
+const s = {
   container: { padding: "0" },
   header: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: "24px",
+    marginBottom: "20px",
   },
-
-  titulo: { fontSize: "22px", fontWeight: "bold", color: "#1a1a2e", margin: 0 },
+  titulo: {
+    fontSize: "18px",
+    fontWeight: "500",
+    color: "var(--color-text-primary)",
+    margin: 0,
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  },
+  tituloIcon: { color: "var(--color-text-secondary)" },
   caixaCard: {
-    backgroundColor: "#fff",
-    borderRadius: "12px",
-    padding: "32px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
-    marginBottom: "24px",
+    backgroundColor: "var(--color-background-primary)",
+    borderRadius: "var(--border-radius-lg)",
+    border: "0.5px solid var(--color-border-tertiary)",
+    padding: "28px",
+    marginBottom: "20px",
   },
   caixaStatus: {
     display: "flex",
     alignItems: "center",
-    gap: "16px",
+    gap: "14px",
+    marginBottom: "14px",
+  },
+  caixaInfo: { fontSize: "13px", color: "var(--color-text-secondary)" },
+  valorInicialTexto: {
+    fontSize: "14px",
+    color: "var(--color-text-primary)",
     marginBottom: "16px",
   },
-  caixaInfo: { fontSize: "14px", color: "#888" },
-  valorInicialTexto: { fontSize: "16px", color: "#333", marginBottom: "16px" },
   statusAberto: {
-    backgroundColor: "#d1fae5",
-    color: "#065f46",
-    padding: "6px 14px",
+    backgroundColor: "var(--color-badge-green-bg)",
+    color: "var(--color-badge-green-text)",
+    padding: "5px 12px",
     borderRadius: "20px",
-    fontSize: "13px",
-    fontWeight: "600",
+    fontSize: "12px",
+    fontWeight: "500",
   },
   statusFechado: {
-    backgroundColor: "#fee2e2",
-    color: "#991b1b",
-    padding: "6px 14px",
+    backgroundColor: "var(--color-danger-bg)",
+    color: "var(--color-danger-text)",
+    padding: "5px 12px",
     borderRadius: "20px",
-    fontSize: "13px",
-    fontWeight: "600",
+    fontSize: "12px",
+    fontWeight: "500",
   },
-  abrirBox: { display: "flex", gap: "12px", alignItems: "center" },
-  fecharBox: { display: "flex", gap: "12px", alignItems: "center" },
+  abrirBox: { display: "flex", gap: "10px", alignItems: "center" },
+  fecharBox: { display: "flex", gap: "10px", alignItems: "center" },
   inputAbrir: {
-    padding: "10px 14px",
-    borderRadius: "8px",
-    border: "1px solid #ddd",
-    fontSize: "14px",
+    padding: "9px 12px",
+    borderRadius: "var(--border-radius-md)",
+    border: "0.5px solid var(--color-border-primary)",
+    fontSize: "13px",
     width: "220px",
+    backgroundColor: "var(--color-background-secondary)",
+    color: "var(--color-text-primary)",
+    fontFamily: "inherit",
   },
   inputFechar: {
-    padding: "10px 14px",
-    borderRadius: "8px",
-    border: "1px solid #ddd",
-    fontSize: "14px",
+    padding: "9px 12px",
+    borderRadius: "var(--border-radius-md)",
+    border: "0.5px solid var(--color-border-primary)",
+    fontSize: "13px",
     width: "220px",
+    backgroundColor: "var(--color-background-secondary)",
+    color: "var(--color-text-primary)",
+    fontFamily: "inherit",
   },
   botaoAbrir: {
-    backgroundColor: "#065f46",
-    color: "#fff",
+    backgroundColor: "var(--color-success)",
+    color: "#ffffff",
     border: "none",
-    borderRadius: "8px",
-    padding: "10px 24px",
+    borderRadius: "var(--border-radius-md)",
+    padding: "9px 20px",
     cursor: "pointer",
-    fontWeight: "600",
+    fontWeight: "500",
+    fontSize: "13px",
+    fontFamily: "inherit",
   },
   botaoFechar: {
-    backgroundColor: "#991b1b",
-    color: "#fff",
+    backgroundColor: "var(--color-danger-text)",
+    color: "#ffffff",
     border: "none",
-    borderRadius: "8px",
-    padding: "10px 24px",
+    borderRadius: "var(--border-radius-md)",
+    padding: "9px 20px",
     cursor: "pointer",
-    fontWeight: "600",
+    fontWeight: "500",
+    fontSize: "13px",
+    fontFamily: "inherit",
   },
   tabelaContainer: {
-    backgroundColor: "#fff",
-    borderRadius: "12px",
-    padding: "24px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
+    backgroundColor: "var(--color-background-primary)",
+    borderRadius: "var(--border-radius-lg)",
+    border: "0.5px solid var(--color-border-tertiary)",
+    padding: "20px",
   },
   tabelaTitulo: {
-    fontSize: "16px",
-    fontWeight: "600",
-    color: "#1a1a2e",
-    marginBottom: "16px",
+    fontSize: "14px",
+    fontWeight: "500",
+    color: "var(--color-text-primary)",
+    marginBottom: "14px",
   },
   tabela: { width: "100%", borderCollapse: "collapse" },
-  thead: { backgroundColor: "#f8f9fa" },
+  thead: { backgroundColor: "var(--color-background-secondary)" },
   th: {
-    padding: "14px 16px",
+    padding: "12px 16px",
     textAlign: "left",
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#555",
+    fontSize: "12px",
+    fontWeight: "500",
+    color: "var(--color-text-secondary)",
   },
-  tr: { borderTop: "1px solid #f0f0f0" },
-  td: { padding: "14px 16px", fontSize: "14px", color: "#333" },
-  positivo: { color: "#065f46", fontWeight: "600" },
-  negativo: { color: "#991b1b", fontWeight: "600" },
-  vazio: { padding: "40px", textAlign: "center", color: "#888" },
-  erro: { color: "#e53e3e", fontSize: "14px", marginTop: "12px" },
-  carregando: { textAlign: "center", marginTop: "40px", color: "#888" },
+  tr: { borderTop: "0.5px solid var(--color-border-tertiary)" },
+  td: {
+    padding: "12px 16px",
+    fontSize: "13px",
+    color: "var(--color-text-primary)",
+  },
+  positivo: { color: "var(--color-success)", fontWeight: "500" },
+  negativo: { color: "var(--color-danger-text)", fontWeight: "500" },
+  vazio: {
+    padding: "40px",
+    textAlign: "center",
+    color: "var(--color-text-secondary)",
+  },
+  erro: {
+    color: "var(--color-danger-text)",
+    fontSize: "13px",
+    marginTop: "12px",
+  },
+  carregando: {
+    textAlign: "center",
+    marginTop: "40px",
+    color: "var(--color-text-secondary)",
+  },
 };

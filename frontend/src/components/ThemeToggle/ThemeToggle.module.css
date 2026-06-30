@@ -1,0 +1,23 @@
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--border-radius-md);
+  border: 0.5px solid var(--color-border-primary);
+  background: var(--color-background-primary);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+
+.toggle:hover {
+  background: var(--color-background-secondary);
+  color: var(--color-text-primary);
+}
+
+.label {
+  font-size: 12px;
+}

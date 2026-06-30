@@ -1,5 +1,28 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { ThemeToggle } from "./ThemeToggle/ThemeToggle";
+import {
+  LayoutDashboard,
+  ShoppingBag,
+  Receipt,
+  Wallet,
+  Tag,
+  Truck,
+  BarChart3,
+} from "lucide-react";
+
+const MENU_ITEMS = [
+  { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { path: "/produtos", icon: ShoppingBag, label: "Produtos" },
+  { path: "/vendas", icon: Receipt, label: "Vendas" },
+  { path: "/caixa", icon: Wallet, label: "Caixa" },
+];
+
+const MENU_ADMIN = [
+  { path: "/categorias", icon: Tag, label: "Categorias" },
+  { path: "/fornecedores", icon: Truck, label: "Fornecedores" },
+  { path: "/relatorios", icon: BarChart3, label: "Relatórios" },
+];
 
 export default function Layout({ children }) {
   const navigate = useNavigate();
@@ -7,60 +30,57 @@ export default function Layout({ children }) {
   const { usuario, logout } = useAuth();
   const role = usuario?.role;
 
-  const menuItems = [
-    { path: "/dashboard", icon: "📊", label: "Dashboard" },
-    { path: "/produtos", icon: "🛍️", label: "Produtos" },
-    { path: "/vendas", icon: "💰", label: "Vendas" },
-    { path: "/caixa", icon: "📦", label: "Caixa" },
-  ];
-
-  const menuAdmin = [
-    { path: "/categorias", icon: "🏷️", label: "Categorias" },
-    { path: "/fornecedores", icon: "🚚", label: "Fornecedores" },
-    { path: "/relatorios", icon: "📈", label: "Relatórios" },
-  ];
-
   const allItems =
     role === "ADMIN" || role === "GERENTE"
-      ? [...menuItems, ...menuAdmin]
-      : menuItems;
+      ? [...MENU_ITEMS, ...MENU_ADMIN]
+      : MENU_ITEMS;
+
+  const inicial = usuario?.nome?.charAt(0)?.toUpperCase() || "U";
 
   return (
-    <div style={styles.layout}>
+    <div style={s.layout}>
       {/* ─── SIDEBAR ─── */}
-      <div style={styles.sidebar}>
-        <h1 style={styles.logo}>GestorFlow</h1>
-        <nav style={styles.nav}>
-          {allItems.map((item) => (
-            <div
-              key={item.path}
-              onClick={() => navigate(item.path)}
-              style={
-                location.pathname === item.path
-                  ? { ...styles.item, ...styles.itemAtivo }
-                  : styles.item
-              }
-            >
-              <span style={styles.icone}>{item.icon}</span>
-              {item.label}
-            </div>
-          ))}
+      <aside style={s.sidebar}>
+        <div style={s.logo}>
+          <img src="/icon.svg" alt="" style={s.logoIcon} />
+          GestorFlow
+        </div>
+
+        <nav style={s.nav}>
+          {allItems.map((item) => {
+            const ativo = location.pathname === item.path;
+            const Icon = item.icon;
+            return (
+              <div
+                key={item.path}
+                onClick={() => navigate(item.path)}
+                style={ativo ? { ...s.item, ...s.itemAtivo } : s.item}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === "Enter" && navigate(item.path)}
+              >
+                <Icon size={16} aria-hidden="true" />
+                {item.label}
+              </div>
+            );
+          })}
         </nav>
-        <div style={styles.userBox}>
-          <div style={styles.avatar}>{usuario?.nome?.charAt(0) || "U"}</div>
+
+        <div style={s.userBox}>
+          <div style={s.avatar}>{inicial}</div>
           <div>
-            <p style={styles.userName}>{usuario?.nome}</p>
-            <p style={styles.userRole}>{usuario?.role}</p>
+            <p style={s.userName}>{usuario?.nome}</p>
+            <p style={s.userRole}>{role}</p>
           </div>
         </div>
-      </div>
+      </aside>
 
       {/* ─── CONTEÚDO ─── */}
-      <div style={styles.content}>
-        <div style={styles.topBar}>
-          <div></div>
-          <div style={styles.topBarDireita}>
-            <span style={styles.data}>
+      <div style={s.content}>
+        <div style={s.topBar}>
+          <div />
+          <div style={s.topBarDireita}>
+            <span style={s.data}>
               {new Date().toLocaleDateString("pt-BR", {
                 weekday: "long",
                 day: "numeric",
@@ -68,7 +88,8 @@ export default function Layout({ children }) {
                 year: "numeric",
               })}
             </span>
-            <button onClick={logout} style={styles.botaoSair}>
+            <ThemeToggle />
+            <button onClick={logout} style={s.botaoSair}>
               Sair
             </button>
           </div>
@@ -79,17 +100,17 @@ export default function Layout({ children }) {
   );
 }
 
-const styles = {
+const s = {
   layout: {
     display: "flex",
     minHeight: "100vh",
-    backgroundColor: "#f0f2f5",
+    backgroundColor: "var(--color-background-tertiary)",
   },
   sidebar: {
-    width: "220px",
-    backgroundColor: "#1a1a2e",
-    color: "#fff",
-    padding: "24px 0",
+    width: "200px",
+    backgroundColor: "var(--color-background-primary)",
+    borderRight: "0.5px solid var(--color-border-tertiary)",
+    padding: "20px 0",
     display: "flex",
     flexDirection: "column",
     position: "fixed",
@@ -98,69 +119,77 @@ const styles = {
     bottom: 0,
   },
   logo: {
-    fontSize: "20px",
-    fontWeight: "bold",
-    padding: "0 24px",
-    margin: "0 0 32px",
-    color: "#fff",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    fontSize: "17px",
+    fontWeight: "500",
+    padding: "0 20px",
+    margin: "0 0 24px",
+    color: "var(--color-text-primary)",
+  },
+  logoIcon: {
+    width: "24px",
+    height: "24px",
+    borderRadius: "6px",
+    flexShrink: 0,
   },
   nav: {
     display: "flex",
     flexDirection: "column",
-    gap: "4px",
-    padding: "0 12px",
+    gap: "2px",
+    padding: "0 8px",
     flex: 1,
   },
   item: {
     display: "flex",
     alignItems: "center",
-    gap: "12px",
-    padding: "10px 14px",
-    borderRadius: "8px",
-    fontSize: "14px",
-    color: "#a0a0b8",
+    gap: "10px",
+    padding: "8px 12px",
+    borderRadius: "var(--border-radius-md)",
+    fontSize: "13px",
+    color: "var(--color-text-secondary)",
     cursor: "pointer",
   },
   itemAtivo: {
-    backgroundColor: "#4f46e5",
-    color: "#fff",
-  },
-  icone: {
-    fontSize: "18px",
+    backgroundColor: "var(--color-background-info)",
+    color: "var(--color-text-info)",
+    fontWeight: "500",
   },
   userBox: {
     display: "flex",
     alignItems: "center",
-    gap: "10px",
-    padding: "16px 24px",
-    borderTop: "1px solid #2a2a40",
-    marginTop: "auto",
+    gap: "8px",
+    padding: "14px 20px",
+    borderTop: "0.5px solid var(--color-border-tertiary)",
   },
   avatar: {
-    width: "36px",
-    height: "36px",
+    width: "32px",
+    height: "32px",
     borderRadius: "50%",
-    backgroundColor: "#4f46e5",
+    backgroundColor: "var(--color-background-info)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    fontSize: "14px",
-    fontWeight: "bold",
-    color: "#fff",
+    fontSize: "12px",
+    fontWeight: "500",
+    color: "var(--color-text-info)",
+    flexShrink: 0,
   },
   userName: {
     margin: 0,
-    fontSize: "13px",
-    color: "#fff",
+    fontSize: "12px",
+    fontWeight: "500",
+    color: "var(--color-text-primary)",
   },
   userRole: {
     margin: 0,
     fontSize: "11px",
-    color: "#a0a0b8",
+    color: "var(--color-text-secondary)",
   },
   content: {
     flex: 1,
-    marginLeft: "220px",
+    marginLeft: "200px",
     padding: "24px 32px",
   },
   topBar: {
@@ -172,19 +201,20 @@ const styles = {
   topBarDireita: {
     display: "flex",
     alignItems: "center",
-    gap: "16px",
+    gap: "12px",
   },
   data: {
     fontSize: "13px",
-    color: "#888",
+    color: "var(--color-text-secondary)",
   },
   botaoSair: {
     backgroundColor: "transparent",
-    color: "#1a1a2e",
-    border: "1px solid #ddd",
-    borderRadius: "8px",
-    padding: "6px 16px",
+    color: "var(--color-text-primary)",
+    border: "0.5px solid var(--color-border-primary)",
+    borderRadius: "var(--border-radius-md)",
+    padding: "6px 14px",
     cursor: "pointer",
     fontSize: "13px",
+    fontFamily: "inherit",
   },
 };

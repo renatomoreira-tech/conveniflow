@@ -12,10 +12,9 @@ export default function Login() {
     e.preventDefault();
     setErro("");
     setCarregando(true);
-
     try {
       await login(email, senha);
-    } catch (error) {
+    } catch {
       setErro("Email ou senha inválidos");
     } finally {
       setCarregando(false);
@@ -23,84 +22,104 @@ export default function Login() {
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.titulo}>GestorFlow</h1>
-        <p style={styles.subtitulo}>Sistema de Gestão</p>
+    <div style={s.container}>
+      <div style={s.card}>
+        <h1 style={s.titulo}>GestorFlow</h1>
+        <p style={s.subtitulo}>Sistema de Gestão</p>
 
-        <form onSubmit={handleLogin} style={styles.form}>
-          <div style={styles.campo}>
-            <label style={styles.label}>Email</label>
+        <div style={s.form}>
+          <div style={s.campo}>
+            <label style={s.label}>Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              style={styles.input}
+              style={s.input}
               placeholder="seu@email.com"
               required
             />
           </div>
 
-          <div style={styles.campo}>
-            <label style={styles.label}>Senha</label>
+          <div style={s.campo}>
+            <label style={s.label}>Senha</label>
             <input
               type="password"
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
-              style={styles.input}
+              style={s.input}
               placeholder="••••••••"
               required
             />
           </div>
 
-          {erro && <p style={styles.erro}>{erro}</p>}
+          {erro && (
+            <p style={s.erro}>
+              <i
+                className="ti ti-alert-circle"
+                style={{
+                  fontSize: "14px",
+                  verticalAlign: "-1px",
+                  marginRight: "5px",
+                }}
+                aria-hidden="true"
+              />
+              {erro}
+            </p>
+          )}
 
           <button
-            type="submit"
-            style={carregando ? styles.botaoDesabilitado : styles.botao}
+            onClick={handleLogin}
+            style={
+              carregando ? { ...s.botao, ...s.botaoDesabilitado } : s.botao
+            }
             disabled={carregando}
           >
             {carregando ? "Entrando..." : "Entrar"}
           </button>
-        </form>
+        </div>
+
+        <p style={s.demoHint}>
+          Demo: <span style={s.demoCode}>demo@gestorflow.com</span> /{" "}
+          <span style={s.demoCode}>demo123</span>
+        </p>
       </div>
     </div>
   );
 }
 
-const styles = {
+const s = {
   container: {
     minHeight: "100vh",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f0f2f5",
+    backgroundColor: "var(--color-background-tertiary)",
   },
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: "var(--color-background-primary)",
     padding: "40px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+    borderRadius: "var(--border-radius-xl)",
+    border: "0.5px solid var(--color-border-tertiary)",
     width: "100%",
-    maxWidth: "400px",
+    maxWidth: "380px",
   },
   titulo: {
     textAlign: "center",
-    fontSize: "28px",
-    fontWeight: "bold",
-    color: "#1a1a2e",
+    fontSize: "24px",
+    fontWeight: "500",
+    color: "var(--color-text-primary)",
     margin: "0 0 4px",
   },
   subtitulo: {
     textAlign: "center",
-    color: "#888",
-    marginBottom: "32px",
-    fontSize: "14px",
+    color: "var(--color-text-secondary)",
+    marginBottom: "28px",
+    fontSize: "13px",
   },
   form: {
     display: "flex",
     flexDirection: "column",
-    gap: "16px",
+    gap: "14px",
   },
   campo: {
     display: "flex",
@@ -108,42 +127,53 @@ const styles = {
     gap: "6px",
   },
   label: {
-    fontSize: "14px",
-    fontWeight: "600",
-    color: "#333",
+    fontSize: "13px",
+    fontWeight: "500",
+    color: "var(--color-text-primary)",
   },
   input: {
-    padding: "10px 14px",
-    borderRadius: "8px",
-    border: "1px solid #ddd",
-    fontSize: "14px",
+    padding: "9px 12px",
+    borderRadius: "var(--border-radius-md)",
+    border: "0.5px solid var(--color-border-primary)",
+    fontSize: "13px",
     outline: "none",
+    backgroundColor: "var(--color-background-secondary)",
+    color: "var(--color-text-primary)",
+    fontFamily: "inherit",
   },
   botao: {
-    padding: "12px",
-    backgroundColor: "#4f46e5",
-    color: "#fff",
+    padding: "10px",
+    backgroundColor: "var(--color-text-info)",
+    color: "#ffffff",
     border: "none",
-    borderRadius: "8px",
-    fontSize: "16px",
-    fontWeight: "600",
+    borderRadius: "var(--border-radius-md)",
+    fontSize: "14px",
+    fontWeight: "500",
     cursor: "pointer",
-    marginTop: "8px",
+    marginTop: "6px",
+    fontFamily: "inherit",
   },
   botaoDesabilitado: {
-    padding: "12px",
-    backgroundColor: "#a5a3e8",
-    color: "#fff",
-    border: "none",
-    borderRadius: "8px",
-    fontSize: "16px",
-    fontWeight: "600",
+    opacity: 0.6,
     cursor: "not-allowed",
-    marginTop: "8px",
   },
   erro: {
-    color: "#e53e3e",
-    fontSize: "14px",
+    color: "var(--color-danger-text, #a32d2d)",
+    backgroundColor: "var(--color-danger-bg, #fcebeb)",
+    fontSize: "13px",
     textAlign: "center",
+    padding: "8px 12px",
+    borderRadius: "var(--border-radius-md)",
+    margin: 0,
+  },
+  demoHint: {
+    marginTop: "20px",
+    textAlign: "center",
+    fontSize: "12px",
+    color: "var(--color-text-muted)",
+  },
+  demoCode: {
+    fontFamily: "monospace",
+    color: "var(--color-text-secondary)",
   },
 };
