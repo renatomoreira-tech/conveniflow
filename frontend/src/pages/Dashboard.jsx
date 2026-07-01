@@ -17,8 +17,9 @@ export default function Dashboard() {
   const role = usuario?.role;
   const navigate = useNavigate();
 
-  const [vendasHoje, setVendasHoje] = useState([]);
+  const [ultimasVendas, setUltimasVendas] = useState([]);
   const [totalHoje, setTotalHoje] = useState(0);
+  const [quantidadeHoje, setQuantidadeHoje] = useState(0);
   const [estoqueBaixo, setEstoqueBaixo] = useState(0);
   const [caixaAtual, setCaixaAtual] = useState(null);
   const [carregando, setCarregando] = useState(true);
@@ -29,21 +30,17 @@ export default function Dashboard() {
 
   async function carregarDados() {
     try {
-      const hoje = new Date().toISOString().split("T")[0];
-      const amanha = new Date(Date.now() + 86400000)
-        .toISOString()
-        .split("T")[0];
-
-      const [vendasRes, produtosRes, caixaRes] = await Promise.all([
-        api.get(`/sales/relatorio?inicio=${hoje}&fim=${amanha}`).catch(() => ({
-          data: { sales: [], totalPeriodo: 0, quantidade: 0 },
+      const [resumoRes, produtosRes, caixaRes] = await Promise.all([
+        api.get("/sales/resumo-hoje").catch(() => ({
+          data: { ultimasVendas: [], totalHoje: 0, quantidade: 0 },
         })),
         api.get("/products").catch(() => ({ data: [] })),
         api.get("/caixa/atual").catch(() => ({ data: null })),
       ]);
 
-      setVendasHoje(vendasRes.data.sales || []);
-      setTotalHoje(vendasRes.data.totalPeriodo || 0);
+      setUltimasVendas(resumoRes.data.ultimasVendas || []);
+      setTotalHoje(resumoRes.data.totalHoje || 0);
+      setQuantidadeHoje(resumoRes.data.quantidade || 0);
 
       const baixo = produtosRes.data.filter(
         (p) => p.estoque <= p.estoqueMinimo,
@@ -57,7 +54,7 @@ export default function Dashboard() {
     }
   }
 
-  const ticketMedio = vendasHoje.length > 0 ? totalHoje / vendasHoje.length : 0;
+  const ticketMedio = quantidadeHoje > 0 ? totalHoje / quantidadeHoje : 0;
 
   const saudacao = () => {
     const h = new Date().getHours();
@@ -107,7 +104,7 @@ export default function Dashboard() {
           iconColor="var(--color-badge-green-text)"
           Icon={ShoppingCart}
           label="Pedidos"
-          valor={vendasHoje.length}
+          valor={quantidadeHoje}
         />
         <MetricaCard
           iconBg="var(--color-badge-purple-bg)"
@@ -142,10 +139,10 @@ export default function Dashboard() {
         {/* ─── ÚLTIMAS VENDAS ─── */}
         <div style={s.card}>
           <h3 style={s.cardTitulo}>Últimas vendas</h3>
-          {vendasHoje.length === 0 ? (
-            <p style={s.vazio}>Nenhuma venda hoje</p>
+          {ultimasVendas.length === 0 ? (
+            <p style={s.vazio}>Nenhuma venda registrada ainda</p>
           ) : (
-            vendasHoje.slice(0, 5).map((venda) => (
+            ultimasVendas.map((venda) => (
               <div key={venda.id} style={s.vendaItem}>
                 <div>
                   <p style={s.vendaNome}>
@@ -154,10 +151,7 @@ export default function Dashboard() {
                       .join(", ")}
                   </p>
                   <p style={s.vendaHora}>
-                    {new Date(venda.data_venda).toLocaleTimeString("pt-BR", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {formatarDataVenda(venda.data_venda)}
                     {" — "}
                     {venda.user?.nome}
                   </p>
@@ -232,6 +226,31 @@ export default function Dashboard() {
 }
 
 /* ─── Sub-componentes ─── */
+
+function formatarDataVenda(dataVenda) {
+  const data = new Date(dataVenda);
+  const hoje = new Date();
+  const ontem = new Date();
+  ontem.setDate(hoje.getDate() - 1);
+
+  const hora = data.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const mesmoData = (a, b) =>
+    a.getDate() === b.getDate() &&
+    a.getMonth() === b.getMonth() &&
+    a.getFullYear() === b.getFullYear();
+
+  if (mesmoData(data, hoje)) return `Hoje, ${hora}`;
+  if (mesmoData(data, ontem)) return `Ontem, ${hora}`;
+
+  const dataCurta = data.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+  });
+  return `${dataCurta}, ${hora}`;
+}
 
 function MetricaCard({
   iconBg,
