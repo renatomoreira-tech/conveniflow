@@ -38,11 +38,9 @@ async function createSale(req, res) {
       }
 
       if (product.estoque < item.quantidade) {
-        return res
-          .status(400)
-          .json({
-            error: `Estoque insuficiente para o produto: ${product.nome}`,
-          });
+        return res.status(400).json({
+          error: `Estoque insuficiente para o produto: ${product.nome}`,
+        });
       }
     }
 
@@ -190,7 +188,7 @@ async function cancelSale(req, res) {
   }
 }
 
-// ─── RELATÓRIO DE VENDAS POR PERÍODO ─────────────────────
+// ─── RELATÓRIO DE VENDAS POR PERÍODO (ADMIN/GERENTE) ─────
 async function getSalesByPeriod(req, res) {
   try {
     const { inicio, fim } = req.query;
@@ -219,10 +217,58 @@ async function getSalesByPeriod(req, res) {
   }
 }
 
+// ─── RESUMO DE HOJE (TODOS OS PERFIS) ────────────────────
+// Versão enxuta para o Dashboard: números agregados do dia
+// (vendas, pedidos, ticket médio) + as 5 últimas vendas em
+// geral (não só de hoje, para o card nunca ficar vazio em
+// dias de pouco movimento). Liberada para ADMIN, GERENTE e CAIXA.
+async function getResumoHoje(req, res) {
+  try {
+    const inicio = new Date();
+    inicio.setHours(0, 0, 0, 0);
+
+    const fim = new Date();
+    fim.setHours(23, 59, 59, 999);
+
+    const [vendasHoje, ultimasVendas] = await Promise.all([
+      prisma.sale.findMany({
+        where: {
+          status: "CONCLUIDA",
+          data_venda: { gte: inicio, lte: fim },
+        },
+      }),
+      prisma.sale.findMany({
+        where: { status: "CONCLUIDA" },
+        orderBy: { data_venda: "desc" },
+        take: 5,
+        include: {
+          user: { select: { nome: true } },
+          itens: { include: { product: { select: { nome: true } } } },
+        },
+      }),
+    ]);
+
+    const totalHoje = vendasHoje.reduce(
+      (acc, sale) => acc + sale.valor_total,
+      0,
+    );
+
+    return res.json({
+      totalHoje,
+      quantidade: vendasHoje.length,
+      ultimasVendas,
+    });
+  } catch (error) {
+    console.error("Erro ao buscar resumo do dia:", error);
+    return res.status(500).json({ error: "Erro ao buscar resumo do dia" });
+  }
+}
+
 module.exports = {
   createSale,
   getSales,
   getSaleById,
   cancelSale,
   getSalesByPeriod,
+  getResumoHoje,
 };

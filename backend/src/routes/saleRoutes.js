@@ -11,6 +11,7 @@ router.get(
   autorizar("ADMIN", "GERENTE"),
   saleController.getSalesByPeriod,
 );
+router.get("/sales/resumo-hoje", autenticar, saleController.getResumoHoje);
 router.get("/sales/:id", autenticar, saleController.getSaleById);
 router.patch(
   "/sales/:id/cancelar",
