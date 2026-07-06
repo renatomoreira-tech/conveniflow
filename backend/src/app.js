@@ -7,6 +7,7 @@ const saleRoutes = require("./routes/saleRoutes");
 const categoriaRoutes = require("./routes/categoriaRoutes");
 const fornecedorRoutes = require("./routes/fornecedorRoutes");
 const caixaRoutes = require("./routes/caixaRoutes");
+const clienteRoutes = require("./routes/clienteRoutes");
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use(saleRoutes);
 app.use(categoriaRoutes);
 app.use(fornecedorRoutes);
 app.use(caixaRoutes);
+app.use(clienteRoutes);
 
 // ─── ROTA BASE ───────────────────────────────────────────
 app.get("/", (req, res) => {

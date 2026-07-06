@@ -26,6 +26,18 @@ enum Role {
   CAIXA
 }
 
+// ─── CLIENTES ───────────────────────────────────────────
+model Cliente {
+  id           Int      @id @default(autoincrement())
+  nome         String
+  telefone     String?
+  observacoes  String?
+  ativo        Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  sales        Sale[]
+}
+
 // ─── CATEGORIAS ─────────────────────────────────────────
 model Categoria {
   id       Int       @id @default(autoincrement())
@@ -75,6 +87,9 @@ model Sale {
 
   userId        Int
   user          User          @relation(fields: [userId], references: [id])
+
+  clienteId     Int?
+  cliente       Cliente?      @relation(fields: [clienteId], references: [id])
 
   itens         ItemVenda[]
 }
