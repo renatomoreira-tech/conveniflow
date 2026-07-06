@@ -1,8 +1,11 @@
 import axios from "axios";
 
-const api = axios.create({
-  baseURL: "https://conveniflow-production.up.railway.app",
-});
+// Em desenvolvimento local, usa o backend local por padrão.
+// Para testar contra produção, defina VITE_API_URL no .env
+// apontando para a URL do Railway.
+const baseURL = import.meta.env.VITE_API_URL || "http://localhost:3333";
+
+const api = axios.create({ baseURL });
 
 // Adiciona o token automaticamente em todas as requisições
 api.interceptors.request.use((config) => {

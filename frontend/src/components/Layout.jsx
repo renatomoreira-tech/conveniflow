@@ -9,12 +9,14 @@ import {
   Tag,
   Truck,
   BarChart3,
+  Users,
 } from "lucide-react";
 
 const MENU_ITEMS = [
   { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/produtos", icon: ShoppingBag, label: "Produtos" },
   { path: "/vendas", icon: Receipt, label: "Vendas" },
+  { path: "/clientes", icon: Users, label: "Clientes" },
   { path: "/caixa", icon: Wallet, label: "Caixa" },
 ];
 
