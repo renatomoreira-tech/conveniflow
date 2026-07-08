@@ -3,19 +3,23 @@ const prisma = require("../database");
 // ─── ABRIR CAIXA ─────────────────────────────────────────
 async function abrirCaixa(req, res) {
   try {
+    const { lojaId } = req.usuario;
     const { valorInicial } = req.body;
 
-    // Verifica se já há um caixa aberto
+    // Verifica se já há um caixa aberto NESTA loja especificamente
+    // (cada loja tem seu próprio caixa físico, independente das outras).
     const caixaAberto = await prisma.caixa.findFirst({
-      where: { status: "ABERTO" },
+      where: { status: "ABERTO", lojaId },
     });
 
     if (caixaAberto) {
-      return res.status(400).json({ error: "Já existe um caixa aberto" });
+      return res
+        .status(400)
+        .json({ error: "Já existe um caixa aberto nesta loja" });
     }
 
     const caixa = await prisma.caixa.create({
-      data: { valorInicial },
+      data: { valorInicial, lojaId },
     });
 
     return res.status(201).json(caixa);
@@ -29,10 +33,11 @@ async function abrirCaixa(req, res) {
 async function fecharCaixa(req, res) {
   try {
     const { id } = req.params;
+    const { lojaId } = req.usuario;
     const { valorFinal } = req.body;
 
-    const caixa = await prisma.caixa.findUnique({
-      where: { id: Number(id) },
+    const caixa = await prisma.caixa.findFirst({
+      where: { id: Number(id), lojaId },
     });
 
     if (!caixa) {
@@ -64,9 +69,13 @@ async function fecharCaixa(req, res) {
 }
 
 // ─── LISTAR CAIXAS ───────────────────────────────────────
+// Histórico sempre da loja do usuário logado.
 async function getCaixas(req, res) {
   try {
+    const { lojaId } = req.usuario;
+
     const caixas = await prisma.caixa.findMany({
+      where: { lojaId },
       orderBy: { abertura: "desc" },
     });
     return res.json(caixas);
@@ -79,8 +88,10 @@ async function getCaixas(req, res) {
 // ─── CAIXA ATUAL (aberto) ────────────────────────────────
 async function getCaixaAtual(req, res) {
   try {
+    const { lojaId } = req.usuario;
+
     const caixa = await prisma.caixa.findFirst({
-      where: { status: "ABERTO" },
+      where: { status: "ABERTO", lojaId },
     });
 
     if (!caixa) {

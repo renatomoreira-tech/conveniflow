@@ -1,8 +1,24 @@
 const prisma = require("../database");
 
+// ═══════════════════════════════════════════════════════
+// CLIENTE CONTROLLER
+//
+// Diferente de Product/Categoria/Fornecedor/Caixa (que pertencem
+// a uma Loja específica), Cliente pertence ao NEGÓCIO inteiro.
+//
+// Isso reflete uma decisão de negócio: um cliente da Jaque pode
+// comprar em qualquer uma das 4 lojas dela, e ela quer enxergar
+// o histórico e o total devido daquele cliente de forma unificada,
+// não separado por loja.
+//
+// Por isso, aqui filtramos por `req.usuario.negocioId`, não por
+// `lojaId` como nos outros controllers.
+// ═══════════════════════════════════════════════════════
+
 // ─── CRIAR CLIENTE ───────────────────────────────────────
 async function createCliente(req, res) {
   try {
+    const { negocioId } = req.usuario;
     const { nome, telefone, observacoes } = req.body;
 
     if (!nome || !nome.trim()) {
@@ -10,7 +26,7 @@ async function createCliente(req, res) {
     }
 
     const cliente = await prisma.cliente.create({
-      data: { nome: nome.trim(), telefone, observacoes },
+      data: { nome: nome.trim(), telefone, observacoes, negocioId },
     });
 
     return res.status(201).json(cliente);
@@ -22,11 +38,13 @@ async function createCliente(req, res) {
 
 // ─── LISTAR CLIENTES ─────────────────────────────────────
 // Inclui o total devido em vendas PENDENTES de cada cliente,
-// já preparando o terreno para a funcionalidade de fiado.
+// somando vendas de TODAS as lojas do negócio (não só uma).
 async function getClientes(req, res) {
   try {
+    const { negocioId } = req.usuario;
+
     const clientes = await prisma.cliente.findMany({
-      where: { ativo: true },
+      where: { ativo: true, negocioId },
       orderBy: { nome: "asc" },
       include: {
         sales: {
@@ -53,17 +71,21 @@ async function getClientes(req, res) {
 }
 
 // ─── BUSCAR CLIENTE POR ID (com histórico de compras) ────
+// findFirst com negocioId garante que um usuário de um negócio
+// nunca acesse o cliente de outro negócio só adivinhando o ID.
 async function getClienteById(req, res) {
   try {
     const { id } = req.params;
+    const { negocioId } = req.usuario;
 
-    const cliente = await prisma.cliente.findUnique({
-      where: { id: Number(id) },
+    const cliente = await prisma.cliente.findFirst({
+      where: { id: Number(id), negocioId },
       include: {
         sales: {
           orderBy: { data_venda: "desc" },
           include: {
             itens: { include: { product: { select: { nome: true } } } },
+            loja: { select: { nome: true } }, // mostra em qual loja foi a compra
           },
         },
       },
@@ -88,13 +110,21 @@ async function getClienteById(req, res) {
 async function updateCliente(req, res) {
   try {
     const { id } = req.params;
+    const { negocioId } = req.usuario;
     const { nome, telefone, observacoes } = req.body;
 
-    const cliente = await prisma.cliente.update({
-      where: { id: Number(id) },
+    const resultado = await prisma.cliente.updateMany({
+      where: { id: Number(id), negocioId },
       data: { nome, telefone, observacoes },
     });
 
+    if (resultado.count === 0) {
+      return res.status(404).json({ error: "Cliente não encontrado" });
+    }
+
+    const cliente = await prisma.cliente.findUnique({
+      where: { id: Number(id) },
+    });
     return res.json(cliente);
   } catch (error) {
     console.error("Erro ao atualizar cliente:", error);
@@ -106,11 +136,16 @@ async function updateCliente(req, res) {
 async function deleteCliente(req, res) {
   try {
     const { id } = req.params;
+    const { negocioId } = req.usuario;
 
-    await prisma.cliente.update({
-      where: { id: Number(id) },
+    const resultado = await prisma.cliente.updateMany({
+      where: { id: Number(id), negocioId },
       data: { ativo: false },
     });
+
+    if (resultado.count === 0) {
+      return res.status(404).json({ error: "Cliente não encontrado" });
+    }
 
     return res.json({ message: "Cliente desativado com sucesso" });
   } catch (error) {

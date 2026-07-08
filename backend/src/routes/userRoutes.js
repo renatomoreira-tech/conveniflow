@@ -28,4 +28,15 @@ router.delete(
   userController.deleteUser,
 );
 
+// Troca de senha pelo próprio usuário (qualquer perfil autenticado)
+router.patch("/users/trocar-senha", autenticar, userController.trocarSenha);
+
+// Reset de senha por um ADMIN/GERENTE em outro usuário
+router.patch(
+  "/users/:id/resetar-senha",
+  autenticar,
+  autorizar("ADMIN", "GERENTE"),
+  userController.resetarSenha,
+);
+
 module.exports = router;

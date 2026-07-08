@@ -1,19 +1,39 @@
 const prisma = require("../database");
 
+// ═══════════════════════════════════════════════════════
+// SALE CONTROLLER
+//
+// Venda pertence a uma LOJA específica (lojaId) — cada loja tem
+// seu próprio estoque físico e seu próprio caixa, então não faz
+// sentido misturar vendas de lojas diferentes aqui.
+//
+// Já o Cliente (clienteId) é opcional e pertence ao NEGÓCIO inteiro
+// (ver clienteController) — um cliente da Jaque pode ser vinculado
+// a uma venda em qualquer uma das 4 lojas dela.
+//
+// O userId (quem registrou a venda) não vem mais do req.body —
+// antes o frontend enviava isso manualmente, o que permitiria
+// alguém "assinar" uma venda em nome de outro usuário só mudando
+// o valor enviado. Agora vem sempre do token JWT (req.usuario.id),
+// que é assinado pelo servidor e não pode ser falsificado.
+// ═══════════════════════════════════════════════════════
+
 // ─── CRIAR VENDA ─────────────────────────────────────────
-// Body esperado:
+// Body esperado agora:
 // {
-//   "userId": 1,
 //   "formaPagamento": "DINHEIRO",
 //   "desconto": 0,
+//   "clienteId": 5,          // opcional — venda sem cliente identificado
 //   "itens": [
 //     { "productId": 1, "quantidade": 2 },
 //     { "productId": 3, "quantidade": 1 }
 //   ]
 // }
+// (userId e lojaId não são mais enviados pelo cliente — vêm do token)
 async function createSale(req, res) {
   try {
-    const { userId, formaPagamento, desconto = 0, itens } = req.body;
+    const { id: userId, lojaId } = req.usuario;
+    const { formaPagamento, desconto = 0, clienteId, itens } = req.body;
 
     if (!itens || itens.length === 0) {
       return res
@@ -21,11 +41,26 @@ async function createSale(req, res) {
         .json({ error: "A venda deve ter ao menos um item" });
     }
 
-    // Busca todos os produtos dos itens de uma vez
+    // Busca os produtos SÓ dentro da loja do usuário — impede que
+    // alguém monte uma venda usando o ID de um produto de outra loja
+    // (o que bagunçaria o estoque de uma loja que nem participou
+    // dessa venda).
     const productIds = itens.map((item) => item.productId);
     const products = await prisma.product.findMany({
-      where: { id: { in: productIds }, ativo: true },
+      where: { id: { in: productIds }, ativo: true, lojaId },
     });
+
+    // Se o cliente foi informado, confirma que ele pertence ao
+    // mesmo negócio do usuário logado (não a outro negócio qualquer).
+    if (clienteId) {
+      const { negocioId } = req.usuario;
+      const cliente = await prisma.cliente.findFirst({
+        where: { id: clienteId, negocioId },
+      });
+      if (!cliente) {
+        return res.status(404).json({ error: "Cliente não encontrado" });
+      }
+    }
 
     // Valida estoque de cada item
     for (const item of itens) {
@@ -34,7 +69,9 @@ async function createSale(req, res) {
       if (!product) {
         return res
           .status(404)
-          .json({ error: `Produto ID ${item.productId} não encontrado` });
+          .json({
+            error: `Produto ID ${item.productId} não encontrado nesta loja`,
+          });
       }
 
       if (product.estoque < item.quantidade) {
@@ -62,11 +99,15 @@ async function createSale(req, res) {
     );
     const valor_total = valorBruto - desconto;
 
-    // Cria a venda e os itens em uma única transação
+    // Cria a venda e os itens em uma única transação — se algo
+    // falhar no meio (ex: erro ao atualizar estoque), tudo é
+    // desfeito, evitando venda registrada sem baixa de estoque.
     const sale = await prisma.$transaction(async (tx) => {
       const novaVenda = await tx.sale.create({
         data: {
           userId,
+          lojaId,
+          clienteId: clienteId ?? null,
           formaPagamento,
           desconto,
           valor_total,
@@ -97,12 +138,17 @@ async function createSale(req, res) {
 }
 
 // ─── LISTAR VENDAS ───────────────────────────────────────
+// Sempre filtrado pela loja do usuário logado.
 async function getSales(req, res) {
   try {
+    const { lojaId } = req.usuario;
+
     const sales = await prisma.sale.findMany({
+      where: { lojaId },
       orderBy: { data_venda: "desc" },
       include: {
         user: { select: { id: true, nome: true } },
+        cliente: { select: { id: true, nome: true } },
         itens: {
           include: {
             product: { select: { id: true, nome: true } },
@@ -122,11 +168,13 @@ async function getSales(req, res) {
 async function getSaleById(req, res) {
   try {
     const { id } = req.params;
+    const { lojaId } = req.usuario;
 
-    const sale = await prisma.sale.findUnique({
-      where: { id: Number(id) },
+    const sale = await prisma.sale.findFirst({
+      where: { id: Number(id), lojaId },
       include: {
         user: { select: { id: true, nome: true } },
+        cliente: { select: { id: true, nome: true } },
         itens: {
           include: {
             product: { select: { id: true, nome: true, preco: true } },
@@ -150,9 +198,10 @@ async function getSaleById(req, res) {
 async function cancelSale(req, res) {
   try {
     const { id } = req.params;
+    const { lojaId } = req.usuario;
 
-    const sale = await prisma.sale.findUnique({
-      where: { id: Number(id) },
+    const sale = await prisma.sale.findFirst({
+      where: { id: Number(id), lojaId },
       include: { itens: true },
     });
 
@@ -191,10 +240,12 @@ async function cancelSale(req, res) {
 // ─── RELATÓRIO DE VENDAS POR PERÍODO (ADMIN/GERENTE) ─────
 async function getSalesByPeriod(req, res) {
   try {
+    const { lojaId } = req.usuario;
     const { inicio, fim } = req.query;
 
     const sales = await prisma.sale.findMany({
       where: {
+        lojaId,
         status: "CONCLUIDA",
         data_venda: {
           gte: new Date(inicio),
@@ -204,6 +255,7 @@ async function getSalesByPeriod(req, res) {
       orderBy: { data_venda: "desc" },
       include: {
         user: { select: { nome: true } },
+        cliente: { select: { nome: true } },
         itens: { include: { product: { select: { nome: true } } } },
       },
     });
@@ -221,9 +273,11 @@ async function getSalesByPeriod(req, res) {
 // Versão enxuta para o Dashboard: números agregados do dia
 // (vendas, pedidos, ticket médio) + as 5 últimas vendas em
 // geral (não só de hoje, para o card nunca ficar vazio em
-// dias de pouco movimento). Liberada para ADMIN, GERENTE e CAIXA.
+// dias de pouco movimento). Sempre da loja do usuário logado.
 async function getResumoHoje(req, res) {
   try {
+    const { lojaId } = req.usuario;
+
     const inicio = new Date();
     inicio.setHours(0, 0, 0, 0);
 
@@ -233,12 +287,13 @@ async function getResumoHoje(req, res) {
     const [vendasHoje, ultimasVendas] = await Promise.all([
       prisma.sale.findMany({
         where: {
+          lojaId,
           status: "CONCLUIDA",
           data_venda: { gte: inicio, lte: fim },
         },
       }),
       prisma.sale.findMany({
-        where: { status: "CONCLUIDA" },
+        where: { lojaId, status: "CONCLUIDA" },
         orderBy: { data_venda: "desc" },
         take: 5,
         include: {

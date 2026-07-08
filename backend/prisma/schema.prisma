@@ -7,17 +7,106 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─── USUÁRIOS ───────────────────────────────────────────
-model User {
-  id        Int      @id @default(autoincrement())
-  nome      String
-  email     String   @unique
-  senha     String
-  role      Role     @default(CAIXA)
-  ativo     Boolean  @default(true)
-  createdAt DateTime @default(now())
+// ═══════════════════════════════════════════════════════
+// NEGÓCIO E LOJAS
+// ═══════════════════════════════════════════════════════
 
-  sales     Sale[]
+// Representa o cliente do GestorFlow (ex: "Jaque", "Salão da Amanda").
+// Todo dado do sistema pertence, direta ou indiretamente, a um Negocio.
+model Negocio {
+  id            Int      @id @default(autoincrement())
+  nome          String
+  ativo         Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  // Lista de módulos ativos para este negócio (ex: ["produtos","vendas","caixa"]).
+  // O frontend usa isso para decidir o que mostrar no menu.
+  // Se vazio/null, o sistema assume o conjunto padrão completo.
+  modulosAtivos String[] @default(["produtos", "vendas", "categorias", "fornecedores", "caixa", "relatorios", "clientes"])
+
+  lojas         Loja[]
+  clientes      Cliente[]
+  usuarios      User[]
+  usuarioNegocios UsuarioNegocio[]
+}
+
+// Uma unidade física do negócio (ex: "Loja Centro", "Loja Norte").
+// Todo negócio tem ao menos 1 loja, mesmo que seja uso solo.
+model Loja {
+  id         Int      @id @default(autoincrement())
+  nome       String
+  endereco   String?
+  ativo      Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  negocioId  Int
+  negocio    Negocio  @relation(fields: [negocioId], references: [id])
+
+  usuarios     UsuarioLoja[]
+  produtos     Product[]
+  vendas       Sale[]
+  categorias   Categoria[]
+  fornecedores Fornecedor[]
+  caixas       Caixa[]
+}
+
+// ═══════════════════════════════════════════════════════
+// USUÁRIOS
+// ═══════════════════════════════════════════════════════
+
+// Login único no sistema (não é email pessoal — ver decisão registrada).
+// Um usuário pertence a um Negocio, e pode atuar em uma ou mais Lojas
+// desse negócio, cada vínculo com seu próprio role (ex: CAIXA na
+// Loja Centro e GERENTE na Loja Norte).
+model User {
+  id         Int      @id @default(autoincrement())
+  nome       String
+  usuario    String   @unique // login interno, ex: "joao.silva" — não é email
+  senha      String
+  ativo      Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  // Força a troca de senha no próximo login. Liga automaticamente
+  // na criação do usuário, e pode ser religada manualmente pelo
+  // ADMIN a qualquer momento (ex: reset de senha).
+  precisaTrocarSenha Boolean @default(true)
+
+  // SUPER_ADMIN não pertence a um negócio específico (é o dono da
+  // plataforma, Renato) — por isso negocioId é opcional.
+  negocioId  Int?
+  negocio    Negocio? @relation(fields: [negocioId], references: [id])
+
+  isSuperAdmin Boolean @default(false)
+
+  lojas      UsuarioLoja[]
+  sales      Sale[]
+  usuarioNegocios UsuarioNegocio[]
+}
+
+// Relação N:N entre User e Loja, com o role específico naquele vínculo.
+model UsuarioLoja {
+  id       Int   @id @default(autoincrement())
+  role     Role  @default(CAIXA)
+
+  userId   Int
+  lojaId   Int
+  user     User  @relation(fields: [userId], references: [id])
+  loja     Loja  @relation(fields: [lojaId], references: [id])
+
+  @@unique([userId, lojaId]) // não faz sentido o mesmo vínculo duas vezes
+}
+
+// Relação auxiliar N:N entre User e Negocio, útil para consultas
+// rápidas de "quais usuários pertencem a este negócio" sem precisar
+// atravessar Loja. Mantida em sincronia com UsuarioLoja pelo backend.
+model UsuarioNegocio {
+  id        Int     @id @default(autoincrement())
+  userId    Int
+  negocioId Int
+  user      User    @relation(fields: [userId], references: [id])
+  negocio   Negocio @relation(fields: [negocioId], references: [id])
+
+  @@unique([userId, negocioId])
 }
 
 enum Role {
@@ -26,46 +115,69 @@ enum Role {
   CAIXA
 }
 
-// ─── CLIENTES ───────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// CLIENTES (do negócio, não de uma loja específica —
+// um cliente da Jaque pode comprar em qualquer uma das 4 lojas)
+// ═══════════════════════════════════════════════════════
 model Cliente {
-  id           Int      @id @default(autoincrement())
-  nome         String
-  telefone     String?
-  observacoes  String?
-  ativo        Boolean  @default(true)
-  createdAt    DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+  nome        String
+  telefone    String?
+  observacoes String?
+  ativo       Boolean  @default(true)
+  createdAt   DateTime @default(now())
 
-  sales        Sale[]
+  negocioId   Int
+  negocio     Negocio  @relation(fields: [negocioId], references: [id])
+
+  sales       Sale[]
 }
 
-// ─── CATEGORIAS ─────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// CATEGORIAS (por loja)
+// ═══════════════════════════════════════════════════════
 model Categoria {
   id       Int       @id @default(autoincrement())
-  nome     String    @unique
+  nome     String
+
+  lojaId   Int
+  loja     Loja      @relation(fields: [lojaId], references: [id])
 
   produtos Product[]
+
+  @@unique([nome, lojaId]) // nome único dentro da mesma loja, não globalmente
 }
 
-// ─── FORNECEDORES ───────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// FORNECEDORES (por loja)
+// ═══════════════════════════════════════════════════════
 model Fornecedor {
   id       Int       @id @default(autoincrement())
   nome     String
   telefone String?
   email    String?
 
+  lojaId   Int
+  loja     Loja      @relation(fields: [lojaId], references: [id])
+
   produtos Product[]
 }
 
-// ─── PRODUTOS ───────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// PRODUTOS (por loja — estoque é físico, não compartilhado)
+// ═══════════════════════════════════════════════════════
 model Product {
   id             Int        @id @default(autoincrement())
   nome           String
-  codigoBarras   String?    @unique
+  codigoBarras   String?
   preco          Float
   precoCusto     Float?
   estoque        Int        @default(0)
   estoqueMinimo  Int        @default(5)
   ativo          Boolean    @default(true)
+
+  lojaId         Int
+  loja           Loja        @relation(fields: [lojaId], references: [id])
 
   categoriaId    Int?
   fornecedorId   Int?
@@ -73,25 +185,32 @@ model Product {
   fornecedor     Fornecedor? @relation(fields: [fornecedorId], references: [id])
 
   itensVenda     ItemVenda[]
+
+  @@unique([codigoBarras, lojaId]) // código de barras único por loja, não globalmente
 }
 
-// ─── VENDAS ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// VENDAS (por loja)
+// ═══════════════════════════════════════════════════════
 model Sale {
-  id            Int           @id @default(autoincrement())
-  data_venda    DateTime      @default(now())
-  valor_total   Float
-  desconto      Float         @default(0)
+  id             Int            @id @default(autoincrement())
+  data_venda     DateTime       @default(now())
+  valor_total    Float
+  desconto       Float          @default(0)
   formaPagamento FormaPagamento @default(DINHEIRO)
-  status        StatusVenda   @default(CONCLUIDA)
-  troco         Float?
+  status         StatusVenda    @default(CONCLUIDA)
+  troco          Float?
 
-  userId        Int
-  user          User          @relation(fields: [userId], references: [id])
+  lojaId         Int
+  loja           Loja           @relation(fields: [lojaId], references: [id])
 
-  clienteId     Int?
-  cliente       Cliente?      @relation(fields: [clienteId], references: [id])
+  userId         Int
+  user           User           @relation(fields: [userId], references: [id])
 
-  itens         ItemVenda[]
+  clienteId      Int?
+  cliente        Cliente?       @relation(fields: [clienteId], references: [id])
+
+  itens          ItemVenda[]
 }
 
 enum FormaPagamento {
@@ -107,27 +226,34 @@ enum StatusVenda {
   PENDENTE
 }
 
-// ─── ITENS DA VENDA ─────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// ITENS DA VENDA
+// ═══════════════════════════════════════════════════════
 model ItemVenda {
-  id           Int     @id @default(autoincrement())
-  quantidade   Int
+  id            Int     @id @default(autoincrement())
+  quantidade    Int
   precoUnitario Float
-  subtotal     Float
+  subtotal      Float
 
-  saleId       Int
-  productId    Int
-  sale         Sale    @relation(fields: [saleId], references: [id])
-  product      Product @relation(fields: [productId], references: [id])
+  saleId        Int
+  productId     Int
+  sale          Sale    @relation(fields: [saleId], references: [id])
+  product       Product @relation(fields: [productId], references: [id])
 }
 
-// ─── CAIXA ──────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// CAIXA (por loja)
+// ═══════════════════════════════════════════════════════
 model Caixa {
-  id             Int       @id @default(autoincrement())
-  abertura       DateTime  @default(now())
-  fechamento     DateTime?
-  valorInicial   Float
-  valorFinal     Float?
-  status         StatusCaixa @default(ABERTO)
+  id           Int         @id @default(autoincrement())
+  abertura     DateTime    @default(now())
+  fechamento   DateTime?
+  valorInicial Float
+  valorFinal   Float?
+  status       StatusCaixa @default(ABERTO)
+
+  lojaId       Int
+  loja         Loja        @relation(fields: [lojaId], references: [id])
 }
 
 enum StatusCaixa {
