@@ -1,21 +1,34 @@
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
-export default function Login() {
-  const { login } = useAuth();
-  const [usuario, setUsuario] = useState("");
-  const [senha, setSenha] = useState("");
+export default function TrocarSenha() {
+  const navigate = useNavigate();
+  const [senhaAtual, setSenhaAtual] = useState("");
+  const [novaSenha, setNovaSenha] = useState("");
+  const [confirmarSenha, setConfirmarSenha] = useState("");
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
 
-  async function handleLogin(e) {
-    e.preventDefault(); // agora funciona de verdade, pois está num <form onSubmit>
+  async function handleSalvar(e) {
+    e.preventDefault();
     setErro("");
+
+    if (novaSenha.length < 4) {
+      setErro("A nova senha deve ter ao menos 4 caracteres");
+      return;
+    }
+    if (novaSenha !== confirmarSenha) {
+      setErro("As senhas não coincidem");
+      return;
+    }
+
     setCarregando(true);
     try {
-      await login(usuario, senha); // AuthContext já redireciona (dashboard ou trocar-senha)
-    } catch {
-      setErro("Usuário ou senha inválidos");
+      await api.patch("/users/trocar-senha", { senhaAtual, novaSenha });
+      navigate("/dashboard");
+    } catch (error) {
+      setErro(error.response?.data?.error || "Erro ao trocar senha");
     } finally {
       setCarregando(false);
     }
@@ -25,31 +38,45 @@ export default function Login() {
     <div style={s.container}>
       <div style={s.card}>
         <img src="/icon.svg" alt="" style={s.logo} />
-        <h1 style={s.titulo}>GestorFlow</h1>
-        <p style={s.subtitulo}>Sistema de Gestão</p>
+        <h1 style={s.titulo}>Troque sua senha</h1>
+        <p style={s.subtitulo}>
+          Por segurança, defina uma nova senha antes de continuar.
+        </p>
 
-        <form onSubmit={handleLogin} style={s.form}>
+        <form onSubmit={handleSalvar} style={s.form}>
           <div style={s.campo}>
-            <label style={s.label}>Usuário</label>
+            <label style={s.label}>Senha atual</label>
             <input
-              type="text"
-              value={usuario}
-              onChange={(e) => setUsuario(e.target.value)}
+              type="password"
+              value={senhaAtual}
+              onChange={(e) => setSenhaAtual(e.target.value)}
               style={s.input}
-              placeholder="seu.usuario"
+              placeholder="••••••••"
               autoFocus
               required
             />
           </div>
 
           <div style={s.campo}>
-            <label style={s.label}>Senha</label>
+            <label style={s.label}>Nova senha</label>
             <input
               type="password"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
+              value={novaSenha}
+              onChange={(e) => setNovaSenha(e.target.value)}
               style={s.input}
-              placeholder="••••••••"
+              placeholder="Mínimo 4 caracteres"
+              required
+            />
+          </div>
+
+          <div style={s.campo}>
+            <label style={s.label}>Confirmar nova senha</label>
+            <input
+              type="password"
+              value={confirmarSenha}
+              onChange={(e) => setConfirmarSenha(e.target.value)}
+              style={s.input}
+              placeholder="Repita a nova senha"
               required
             />
           </div>
@@ -76,14 +103,9 @@ export default function Login() {
             }
             disabled={carregando}
           >
-            {carregando ? "Entrando..." : "Entrar"}
+            {carregando ? "Salvando..." : "Salvar nova senha"}
           </button>
         </form>
-
-        <p style={s.demoHint}>
-          Demo: <span style={s.demoCode}>demo</span> /{" "}
-          <span style={s.demoCode}>demo123</span>
-        </p>
       </div>
     </div>
   );
@@ -114,7 +136,7 @@ const s = {
   },
   titulo: {
     textAlign: "center",
-    fontSize: "24px",
+    fontSize: "22px",
     fontWeight: "500",
     color: "var(--color-text-primary)",
     margin: "0 0 4px",
@@ -124,6 +146,7 @@ const s = {
     color: "var(--color-text-secondary)",
     marginBottom: "28px",
     fontSize: "13px",
+    lineHeight: "1.5",
   },
   form: {
     display: "flex",
@@ -175,15 +198,5 @@ const s = {
     padding: "8px 12px",
     borderRadius: "var(--border-radius-md)",
     margin: 0,
-  },
-  demoHint: {
-    marginTop: "20px",
-    textAlign: "center",
-    fontSize: "12px",
-    color: "var(--color-text-muted)",
-  },
-  demoCode: {
-    fontFamily: "monospace",
-    color: "var(--color-text-secondary)",
   },
 };

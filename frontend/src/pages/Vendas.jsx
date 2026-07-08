@@ -8,6 +8,7 @@ export default function Vendas() {
   const role = usuario?.role;
   const [produtos, setProdutos] = useState([]);
   const [vendas, setVendas] = useState([]);
+  const [clientes, setClientes] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [modalAberto, setModalAberto] = useState(false);
   const [erro, setErro] = useState("");
@@ -16,6 +17,7 @@ export default function Vendas() {
   const [itens, setItens] = useState([{ productId: "", quantidade: 1 }]);
   const [formaPagamento, setFormaPagamento] = useState("DINHEIRO");
   const [desconto, setDesconto] = useState(0);
+  const [clienteId, setClienteId] = useState("");
 
   useEffect(() => {
     carregarDados();
@@ -23,12 +25,18 @@ export default function Vendas() {
 
   async function carregarDados() {
     try {
-      const [vendasRes, produtosRes] = await Promise.all([
+      const [vendasRes, produtosRes, clientesRes] = await Promise.all([
         api.get("/sales"),
         api.get("/products"),
+        // .catch aqui evita que a tela de Vendas quebre inteira caso
+        // a rota de clientes falhe por algum motivo — o cliente é
+        // opcional na venda, então a ausência dele não deveria
+        // impedir o resto de funcionar.
+        api.get("/clientes").catch(() => ({ data: [] })),
       ]);
       setVendas(vendasRes.data);
       setProdutos(produtosRes.data);
+      setClientes(clientesRes.data);
     } catch (error) {
       setErro("Erro ao carregar dados");
     } finally {
@@ -40,6 +48,7 @@ export default function Vendas() {
     setItens([{ productId: "", quantidade: 1 }]);
     setFormaPagamento("DINHEIRO");
     setDesconto(0);
+    setClienteId("");
     setErro("");
     setSucesso("");
     setModalAberto(true);
@@ -82,11 +91,14 @@ export default function Vendas() {
     }
 
     try {
-      const usuario = JSON.parse(localStorage.getItem("usuario"));
+      // userId e lojaId não são mais enviados pelo frontend — o
+      // backend agora pega os dois direto do token JWT (mais seguro,
+      // já que o token é assinado pelo servidor e não pode ser
+      // manipulado pelo cliente).
       await api.post("/sales", {
-        userId: usuario.id,
         formaPagamento,
         desconto,
+        clienteId: clienteId ? parseInt(clienteId) : null,
         itens: itensValidos.map((i) => ({
           productId: parseInt(i.productId),
           quantidade: parseInt(i.quantidade),
@@ -137,6 +149,7 @@ export default function Vendas() {
               <th style={s.th}>#</th>
               <th style={s.th}>Data</th>
               <th style={s.th}>Operador</th>
+              <th style={s.th}>Cliente</th>
               <th style={s.th}>Itens</th>
               <th style={s.th}>Pagamento</th>
               <th style={s.th}>Total</th>
@@ -147,7 +160,7 @@ export default function Vendas() {
           <tbody>
             {vendas.length === 0 ? (
               <tr>
-                <td colSpan="8" style={s.vazio}>
+                <td colSpan="9" style={s.vazio}>
                   Nenhuma venda registrada
                 </td>
               </tr>
@@ -163,6 +176,7 @@ export default function Vendas() {
                     })}
                   </td>
                   <td style={s.td}>{venda.user?.nome || "—"}</td>
+                  <td style={s.td}>{venda.cliente?.nome || "—"}</td>
                   <td style={s.td}>
                     {venda.itens.map((item) => (
                       <div key={item.id} style={s.item}>
@@ -263,6 +277,26 @@ export default function Vendas() {
                 <Plus size={13} aria-hidden="true" />
                 Adicionar produto
               </button>
+            </div>
+
+            {/* ─── CLIENTE (opcional) ─── */}
+            <div style={s.secao}>
+              <h4 style={s.secaoTitulo}>Cliente (opcional)</h4>
+              <select
+                value={clienteId}
+                onChange={(e) => setClienteId(e.target.value)}
+                style={s.input}
+              >
+                <option value="">Venda sem cliente identificado</option>
+                {clientes.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nome}
+                    {c.totalDevido > 0
+                      ? ` — deve R$ ${c.totalDevido.toFixed(2)}`
+                      : ""}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* ─── PAGAMENTO ─── */}

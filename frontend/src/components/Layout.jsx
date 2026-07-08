@@ -10,20 +10,44 @@ import {
   Truck,
   BarChart3,
   Users,
+  Settings,
 } from "lucide-react";
 
+// Cada item de menu carrega um `modulo` correspondente ao nome usado
+// em Negocio.modulosAtivos (backend). Dashboard não tem módulo —
+// está sempre visível, é a página inicial de qualquer usuário.
 const MENU_ITEMS = [
-  { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { path: "/produtos", icon: ShoppingBag, label: "Produtos" },
-  { path: "/vendas", icon: Receipt, label: "Vendas" },
-  { path: "/clientes", icon: Users, label: "Clientes" },
-  { path: "/caixa", icon: Wallet, label: "Caixa" },
+  {
+    path: "/dashboard",
+    icon: LayoutDashboard,
+    label: "Dashboard",
+    modulo: null,
+  },
+  {
+    path: "/produtos",
+    icon: ShoppingBag,
+    label: "Produtos",
+    modulo: "produtos",
+  },
+  { path: "/vendas", icon: Receipt, label: "Vendas", modulo: "vendas" },
+  { path: "/clientes", icon: Users, label: "Clientes", modulo: "clientes" },
+  { path: "/caixa", icon: Wallet, label: "Caixa", modulo: "caixa" },
 ];
 
 const MENU_ADMIN = [
-  { path: "/categorias", icon: Tag, label: "Categorias" },
-  { path: "/fornecedores", icon: Truck, label: "Fornecedores" },
-  { path: "/relatorios", icon: BarChart3, label: "Relatórios" },
+  { path: "/categorias", icon: Tag, label: "Categorias", modulo: "categorias" },
+  {
+    path: "/fornecedores",
+    icon: Truck,
+    label: "Fornecedores",
+    modulo: "fornecedores",
+  },
+  {
+    path: "/relatorios",
+    icon: BarChart3,
+    label: "Relatórios",
+    modulo: "relatorios",
+  },
 ];
 
 export default function Layout({ children }) {
@@ -32,10 +56,23 @@ export default function Layout({ children }) {
   const { usuario, logout } = useAuth();
   const role = usuario?.role;
 
-  const allItems =
+  // Lista de módulos que o negócio deste usuário tem ativados,
+  // vinda do login e salva no localStorage/AuthContext. Se por
+  // algum motivo não vier nada, assume um array vazio (nenhum
+  // módulo extra visível, só o Dashboard) em vez de quebrar.
+  const modulosAtivos = usuario?.modulosAtivos ?? [];
+
+  const itemsPorRole =
     role === "ADMIN" || role === "GERENTE"
       ? [...MENU_ITEMS, ...MENU_ADMIN]
       : MENU_ITEMS;
+
+  // Filtra por módulo ativo: um item sem `modulo` (como o Dashboard)
+  // sempre aparece; os demais só aparecem se o nome do módulo estiver
+  // na lista modulosAtivos do negócio.
+  const allItems = itemsPorRole.filter(
+    (item) => !item.modulo || modulosAtivos.includes(item.modulo),
+  );
 
   const inicial = usuario?.nome?.charAt(0)?.toUpperCase() || "U";
 
@@ -66,6 +103,26 @@ export default function Layout({ children }) {
               </div>
             );
           })}
+
+          {/* Configurações fica fora da filtragem de módulos —
+              é sobre o próprio sistema, não um módulo de operação,
+              e só ADMIN pode mexer nisso. */}
+          {role === "ADMIN" && (
+            <div
+              onClick={() => navigate("/configuracoes")}
+              style={
+                location.pathname === "/configuracoes"
+                  ? { ...s.item, ...s.itemAtivo }
+                  : s.item
+              }
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === "Enter" && navigate("/configuracoes")}
+            >
+              <Settings size={16} aria-hidden="true" />
+              Configurações
+            </div>
+          )}
         </nav>
 
         <div style={s.userBox}>

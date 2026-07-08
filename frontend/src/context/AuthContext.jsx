@@ -12,14 +12,22 @@ export function AuthProvider({ children }) {
 
   const navigate = useNavigate();
 
-  async function login(email, senha) {
-    const response = await api.post("/users/login", { email, senha });
+  async function login(usuarioLogin, senha) {
+    const response = await api.post("/users/login", {
+      usuario: usuarioLogin,
+      senha,
+    });
     const { token, user } = response.data;
 
     localStorage.setItem("token", token);
     localStorage.setItem("usuario", JSON.stringify(user));
     setUsuario(user);
-    navigate("/dashboard");
+
+    if (user.precisaTrocarSenha) {
+      navigate("/trocar-senha");
+    } else {
+      navigate("/dashboard");
+    }
   }
 
   function logout() {
