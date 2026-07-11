@@ -10,6 +10,7 @@ import {
   BarChart3,
   Users,
   Settings,
+  HandCoins as Wallet2,
 } from "lucide-react";
 
 // Cada item de menu carrega um `modulo` correspondente ao nome usado
@@ -19,21 +20,47 @@ import {
 // agora acontece direto dentro de Produtos, não precisa mais de
 // tela própria.
 const MENU_ITEMS = [
-  { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard", modulo: null },
-  { path: "/produtos",  icon: ShoppingBag,     label: "Produtos",  modulo: "produtos" },
-  { path: "/vendas",    icon: Receipt,         label: "Vendas",    modulo: "vendas" },
-  { path: "/clientes",  icon: Users,           label: "Clientes",  modulo: "clientes" },
-  { path: "/caixa",     icon: Wallet,          label: "Caixa",     modulo: "caixa" },
+  {
+    path: "/dashboard",
+    icon: LayoutDashboard,
+    label: "Dashboard",
+    modulo: null,
+  },
+  {
+    path: "/produtos",
+    icon: ShoppingBag,
+    label: "Produtos",
+    modulo: "produtos",
+  },
+  { path: "/vendas", icon: Receipt, label: "Vendas", modulo: "vendas" },
+  {
+    path: "/contas-receber",
+    icon: Wallet2,
+    label: "Contas a Receber",
+    modulo: "vendas",
+  },
+  { path: "/clientes", icon: Users, label: "Clientes", modulo: "clientes" },
+  { path: "/caixa", icon: Wallet, label: "Caixa", modulo: "caixa" },
 ];
 
 const MENU_ADMIN = [
-  { path: "/fornecedores", icon: Truck,     label: "Fornecedores", modulo: "fornecedores" },
-  { path: "/relatorios",   icon: BarChart3, label: "Relatórios",   modulo: "relatorios" },
+  {
+    path: "/fornecedores",
+    icon: Truck,
+    label: "Fornecedores",
+    modulo: "fornecedores",
+  },
+  {
+    path: "/relatorios",
+    icon: BarChart3,
+    label: "Relatórios",
+    modulo: "relatorios",
+  },
 ];
 
 export default function Layout({ children }) {
-  const navigate  = useNavigate();
-  const location  = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { usuario, logout } = useAuth();
   const role = usuario?.role;
 

@@ -13,6 +13,7 @@ import Fornecedores from "./pages/Fornecedores";
 import Caixa from "./pages/Caixa";
 import Clientes from "./pages/Clientes";
 import Configuracoes from "./pages/Configuracoes";
+import ContasReceber from "./pages/ContasReceber";
 
 function RotaProtegida({ children }) {
   const token = localStorage.getItem("token");
@@ -110,6 +111,16 @@ function AppComTema() {
               <RotaProtegida>
                 <Layout>
                   <Configuracoes />
+                </Layout>
+              </RotaProtegida>
+            }
+          />
+          <Route
+            path="/contas-receber"
+            element={
+              <RotaProtegida>
+                <Layout>
+                  <ContasReceber />
                 </Layout>
               </RotaProtegida>
             }

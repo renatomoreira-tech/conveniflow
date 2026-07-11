@@ -32,13 +32,44 @@ const prisma = require("../database");
 // (userId e lojaId não são mais enviados pelo cliente — vêm do token)
 async function createSale(req, res) {
   try {
-    const { id: userId, lojaId } = req.usuario;
-    const { formaPagamento, desconto = 0, clienteId, itens } = req.body;
+    const { id: userId, lojaId, negocioId } = req.usuario;
+    const {
+      formaPagamento,
+      desconto = 0,
+      clienteId,
+      itens,
+      fiado,
+      primeiraDataVencimento,
+      numeroParcelasFiado,
+      numeroParcelas, // parcelas do cartão de crédito (informativo)
+    } = req.body;
 
     if (!itens || itens.length === 0) {
       return res
         .status(400)
         .json({ error: "A venda deve ter ao menos um item" });
+    }
+
+    // Venda "a prazo" exige cliente identificado (para saber quem
+    // deve), a data do primeiro vencimento, e o número de parcelas
+    // (mínimo 1 — mesmo uma venda a prazo "à vista futura" é tratada
+    // como 1 parcela). As datas seguintes são sempre +1 mês a partir
+    // da primeira, no mesmo dia — não há cálculo automático do dia
+    // em si, já que o prazo pode variar por combinado com o cliente.
+    if (fiado && !clienteId) {
+      return res.status(400).json({
+        error: "Venda a prazo exige um cliente vinculado",
+      });
+    }
+    if (fiado && !primeiraDataVencimento) {
+      return res.status(400).json({
+        error: "Venda a prazo exige a data do primeiro vencimento",
+      });
+    }
+    if (fiado && (!numeroParcelasFiado || numeroParcelasFiado < 1)) {
+      return res.status(400).json({
+        error: "Venda a prazo exige ao menos 1 parcela",
+      });
     }
 
     // Busca os produtos SÓ dentro da loja do usuário — impede que
@@ -53,7 +84,6 @@ async function createSale(req, res) {
     // Se o cliente foi informado, confirma que ele pertence ao
     // mesmo negócio do usuário logado (não a outro negócio qualquer).
     if (clienteId) {
-      const { negocioId } = req.usuario;
       const cliente = await prisma.cliente.findFirst({
         where: { id: clienteId, negocioId },
       });
@@ -111,12 +141,40 @@ async function createSale(req, res) {
           formaPagamento,
           desconto,
           valor_total,
+          status: fiado ? "PENDENTE" : "CONCLUIDA",
+          numeroParcelas:
+            formaPagamento === "CARTAO_CREDITO" && numeroParcelas
+              ? Number(numeroParcelas)
+              : null,
           itens: {
             create: itensComSubtotal,
           },
         },
         include: { itens: true },
       });
+
+      // Cria as parcelas da venda a prazo: valor dividido igualmente,
+      // cada uma vencendo 1 mês após a anterior, a partir da data
+      // do primeiro vencimento informada pelo vendedor.
+      if (fiado) {
+        const valorPorParcela = valor_total / numeroParcelasFiado;
+        const dataBase = new Date(primeiraDataVencimento);
+
+        for (let i = 0; i < numeroParcelasFiado; i++) {
+          const vencimento = new Date(dataBase);
+          vencimento.setMonth(vencimento.getMonth() + i);
+
+          await tx.parcelaFiado.create({
+            data: {
+              saleId: novaVenda.id,
+              numero: i + 1,
+              dataVencimento: vencimento,
+              valorOriginal: valorPorParcela,
+              valorAtual: valorPorParcela,
+            },
+          });
+        }
+      }
 
       // Atualiza estoque de cada produto e registra a saída no
       // histórico de movimentações, para manter rastreabilidade

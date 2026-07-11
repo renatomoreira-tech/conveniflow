@@ -3,6 +3,17 @@ import { useState, useEffect } from "react";
 import api from "../services/api";
 import { Receipt, Plus, X } from "lucide-react";
 
+// Calcula uma data sugerida de vencimento para venda "a prazo":
+// dia configurado no negócio (padrão 20), sempre no mês seguinte
+// à data de hoje. É só uma sugestão inicial — o campo continua
+// editável, já que o prazo pode variar por combinado com o cliente.
+function sugerirDataVencimento(diaSugerido = 20) {
+  const data = new Date();
+  data.setMonth(data.getMonth() + 1);
+  data.setDate(diaSugerido);
+  return data.toISOString().split("T")[0]; // formato yyyy-mm-dd para <input type="date">
+}
+
 export default function Vendas() {
   const { usuario } = useAuth();
   const role = usuario?.role;
@@ -18,6 +29,17 @@ export default function Vendas() {
   const [formaPagamento, setFormaPagamento] = useState("DINHEIRO");
   const [desconto, setDesconto] = useState(0);
   const [clienteId, setClienteId] = useState("");
+
+  // Campos específicos de venda "a prazo" — ativados quando
+  // formaPagamento === "A_PRAZO" (ver dropdown de pagamento abaixo).
+  // A venda pode ser dividida em várias parcelas mensais, cada uma
+  // vencendo no mesmo dia da anterior, 1 mês depois.
+  const [primeiraDataVencimento, setPrimeiraDataVencimento] = useState("");
+  const [numeroParcelasFiado, setNumeroParcelasFiado] = useState(1);
+
+  // Campo específico de crédito parcelado — só informativo, não
+  // afeta status da venda nem exige cliente.
+  const [numeroParcelas, setNumeroParcelas] = useState("");
 
   useEffect(() => {
     carregarDados();
@@ -49,6 +71,9 @@ export default function Vendas() {
     setFormaPagamento("DINHEIRO");
     setDesconto(0);
     setClienteId("");
+    setPrimeiraDataVencimento("");
+    setNumeroParcelasFiado(1);
+    setNumeroParcelas("");
     setErro("");
     setSucesso("");
     setModalAberto(true);
@@ -80,6 +105,36 @@ export default function Vendas() {
     return total - desconto;
   }
 
+  // Quando a forma de pagamento muda para "A_PRAZO", já sugere uma
+  // data de vencimento (dia 20 do mês seguinte, por padrão) para
+  // facilitar — o usuário pode trocar livremente depois. Ao trocar
+  // para qualquer outra forma, os campos de "a prazo" ficam ocultos
+  // mas o valor não é perdido, caso o usuário volte atrás.
+  function handleFormaPagamentoChange(e) {
+    const valor = e.target.value;
+    setFormaPagamento(valor);
+    if (valor === "A_PRAZO" && !primeiraDataVencimento) {
+      setPrimeiraDataVencimento(sugerirDataVencimento());
+    }
+  }
+
+  // Valor de cada parcela "a prazo", calculado a partir do total
+  // da venda e do número de parcelas escolhido. Mostrado como
+  // prévia para o vendedor conferir antes de salvar.
+  function valorPorParcelaFiado() {
+    if (!numeroParcelasFiado || numeroParcelasFiado <= 0) return null;
+    return calcularTotal() / numeroParcelasFiado;
+  }
+
+  // Valor de cada parcela, calculado a partir do total da venda e
+  // do número de parcelas informado. Só faz sentido mostrar quando
+  // ambos estão preenchidos.
+  function valorPorParcela() {
+    const n = parseInt(numeroParcelas);
+    if (!n || n <= 0) return null;
+    return calcularTotal() / n;
+  }
+
   async function handleRegistrarVenda() {
     setErro("");
     setSucesso("");
@@ -87,6 +142,21 @@ export default function Vendas() {
     const itensValidos = itens.filter((i) => i.productId && i.quantidade > 0);
     if (itensValidos.length === 0) {
       setErro("Adicione ao menos um produto à venda");
+      return;
+    }
+
+    const ehAPrazo = formaPagamento === "A_PRAZO";
+
+    if (ehAPrazo && !clienteId) {
+      setErro("Venda a prazo exige um cliente vinculado");
+      return;
+    }
+    if (ehAPrazo && !primeiraDataVencimento) {
+      setErro("Informe a data do primeiro vencimento");
+      return;
+    }
+    if (ehAPrazo && (!numeroParcelasFiado || numeroParcelasFiado < 1)) {
+      setErro("Informe ao menos 1 parcela");
       return;
     }
 
@@ -99,6 +169,13 @@ export default function Vendas() {
         formaPagamento,
         desconto,
         clienteId: clienteId ? parseInt(clienteId) : null,
+        fiado: ehAPrazo,
+        primeiraDataVencimento: ehAPrazo ? primeiraDataVencimento : null,
+        numeroParcelasFiado: ehAPrazo ? parseInt(numeroParcelasFiado) : null,
+        numeroParcelas:
+          formaPagamento === "CARTAO_CREDITO" && numeroParcelas
+            ? parseInt(numeroParcelas)
+            : null,
         itens: itensValidos.map((i) => ({
           productId: parseInt(i.productId),
           quantidade: parseInt(i.quantidade),
@@ -187,6 +264,7 @@ export default function Vendas() {
                   <td style={s.td}>
                     <span style={s.pagamento}>
                       {venda.formaPagamento.replace("_", " ")}
+                      {venda.numeroParcelas ? ` ${venda.numeroParcelas}x` : ""}
                     </span>
                   </td>
                   <td style={s.td}>
@@ -197,10 +275,12 @@ export default function Vendas() {
                       style={
                         venda.status === "CONCLUIDA"
                           ? s.statusConcluida
-                          : s.statusCancelada
+                          : venda.status === "PENDENTE"
+                            ? s.statusPendente
+                            : s.statusCancelada
                       }
                     >
-                      {venda.status}
+                      {venda.status === "PENDENTE" ? "PENDENTE" : venda.status}
                     </span>
                   </td>
                   <td style={s.td}>
@@ -279,15 +359,24 @@ export default function Vendas() {
               </button>
             </div>
 
-            {/* ─── CLIENTE (opcional) ─── */}
+            {/* ─── CLIENTE (opcional, exceto se "A prazo") ─── */}
             <div style={s.secao}>
-              <h4 style={s.secaoTitulo}>Cliente (opcional)</h4>
+              <h4 style={s.secaoTitulo}>
+                Cliente{" "}
+                {formaPagamento === "A_PRAZO"
+                  ? "(obrigatório para venda a prazo)"
+                  : "(opcional)"}
+              </h4>
               <select
                 value={clienteId}
                 onChange={(e) => setClienteId(e.target.value)}
                 style={s.input}
               >
-                <option value="">Venda sem cliente identificado</option>
+                <option value="">
+                  {formaPagamento === "A_PRAZO"
+                    ? "Selecione um cliente..."
+                    : "Venda sem cliente identificado"}
+                </option>
                 {clientes.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.nome}
@@ -307,13 +396,14 @@ export default function Vendas() {
                   <label style={s.label}>Forma de pagamento</label>
                   <select
                     value={formaPagamento}
-                    onChange={(e) => setFormaPagamento(e.target.value)}
+                    onChange={handleFormaPagamentoChange}
                     style={s.input}
                   >
                     <option value="DINHEIRO">Dinheiro</option>
                     <option value="CARTAO_DEBITO">Cartão Débito</option>
                     <option value="CARTAO_CREDITO">Cartão Crédito</option>
                     <option value="PIX">PIX</option>
+                    <option value="A_PRAZO">A prazo</option>
                   </select>
                 </div>
                 <div style={s.campo}>
@@ -329,6 +419,70 @@ export default function Vendas() {
                   />
                 </div>
               </div>
+
+              {/* Parcelas — só aparece com Cartão de Crédito. É só
+                  informativo: a loja já recebe integral da maquininha,
+                  quem parcela é o cliente com o banco dele. Mostra o
+                  valor calculado de cada parcela em tempo real. */}
+              {formaPagamento === "CARTAO_CREDITO" && (
+                <div style={{ ...s.campo, marginTop: "12px" }}>
+                  <label style={s.label}>Número de parcelas (opcional)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="12"
+                    value={numeroParcelas}
+                    onChange={(e) => setNumeroParcelas(e.target.value)}
+                    style={s.input}
+                    placeholder="Ex: 3"
+                  />
+                  {valorPorParcela() !== null && (
+                    <p style={s.parcelaInfo}>
+                      {numeroParcelas}x de R$ {valorPorParcela().toFixed(2)}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Venda a prazo: número de parcelas + data do primeiro
+                  vencimento. As datas seguintes calculam sozinhas
+                  (sempre +1 mês, no mesmo dia). Só aparece quando
+                  "A prazo" está selecionado no dropdown acima. */}
+              {formaPagamento === "A_PRAZO" && (
+                <div style={s.prazoBox}>
+                  <div style={s.pagamentoGrid}>
+                    <div style={s.campo}>
+                      <label style={s.label}>Nº de parcelas</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="24"
+                        value={numeroParcelasFiado}
+                        onChange={(e) => setNumeroParcelasFiado(e.target.value)}
+                        style={s.input}
+                      />
+                    </div>
+                    <div style={s.campo}>
+                      <label style={s.label}>1º vencimento</label>
+                      <input
+                        type="date"
+                        value={primeiraDataVencimento}
+                        onChange={(e) =>
+                          setPrimeiraDataVencimento(e.target.value)
+                        }
+                        style={s.input}
+                      />
+                    </div>
+                  </div>
+                  {valorPorParcelaFiado() !== null && (
+                    <p style={s.parcelaInfo}>
+                      {numeroParcelasFiado}x de R${" "}
+                      {valorPorParcelaFiado().toFixed(2)}
+                      {" — vencimentos mensais a partir da data escolhida"}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* ─── TOTAL ─── */}
@@ -427,6 +581,14 @@ const s = {
   statusConcluida: {
     backgroundColor: "var(--color-badge-green-bg)",
     color: "var(--color-badge-green-text)",
+    padding: "3px 10px",
+    borderRadius: "20px",
+    fontSize: "11px",
+    fontWeight: "500",
+  },
+  statusPendente: {
+    backgroundColor: "var(--color-warning-bg)",
+    color: "var(--color-warning-text)",
     padding: "3px 10px",
     borderRadius: "20px",
     fontSize: "11px",
@@ -579,6 +741,33 @@ const s = {
     backgroundColor: "var(--color-background-secondary)",
     color: "var(--color-text-primary)",
     fontFamily: "inherit",
+  },
+  prazoBox: {
+    marginTop: "14px",
+    padding: "12px",
+    backgroundColor: "var(--color-warning-bg)",
+    borderRadius: "var(--border-radius-md)",
+  },
+  parcelaInfo: {
+    fontSize: "12px",
+    color: "var(--color-text-info)",
+    fontWeight: "500",
+    margin: "6px 0 0",
+  },
+  checkboxLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    fontSize: "13px",
+    fontWeight: "500",
+    color: "var(--color-warning-text)",
+    cursor: "pointer",
+  },
+  checkbox: {
+    width: "15px",
+    height: "15px",
+    cursor: "pointer",
+    accentColor: "var(--color-warning-text)",
   },
   totalBox: {
     display: "flex",

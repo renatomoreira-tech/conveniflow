@@ -24,6 +24,12 @@ model Negocio {
   // Se vazio/null, o sistema assume o conjunto padrão completo.
   modulosAtivos String[] @default(["produtos", "vendas", "categorias", "fornecedores", "caixa", "relatorios", "clientes"])
 
+  // Dia do mês (1-28) em que as vendas fiado vencem. Toda venda
+  // fiado vence sempre no MÊS SEGUINTE a quando foi feita, nesse
+  // dia — nunca no mesmo mês da compra, para manter o prazo
+  // consistente entre vendas feitas em datas diferentes do mês.
+  diaVencimentoFiado Int @default(20)
+
   lojas         Loja[]
   clientes      Cliente[]
   usuarios      User[]
@@ -82,6 +88,7 @@ model User {
   sales      Sale[]
   usuarioNegocios UsuarioNegocio[]
   movimentosEstoque MovimentoEstoque[]
+  pagamentosFiado PagamentoFiado[]
 }
 
 // Relação N:N entre User e Loja, com o role específico naquele vínculo.
@@ -255,6 +262,13 @@ model Sale {
   status         StatusVenda    @default(CONCLUIDA)
   troco          Float?
 
+  // Preenchido apenas quando formaPagamento é CARTAO_CREDITO e a
+  // venda foi parcelada. É só informativo (para relatórios/histórico)
+  // — a loja já recebe o valor integral da maquininha rapidamente,
+  // quem parcela é o cliente com o banco dele. Não afeta status
+  // nem exige clienteId, diferente de uma venda "a prazo".
+  numeroParcelas Int?
+
   lojaId         Int
   loja           Loja           @relation(fields: [lojaId], references: [id])
 
@@ -265,6 +279,8 @@ model Sale {
   cliente        Cliente?       @relation(fields: [clienteId], references: [id])
 
   itens          ItemVenda[]
+  pagamentos     PagamentoFiado[]
+  parcelas       ParcelaFiado[]
 }
 
 enum FormaPagamento {
@@ -272,12 +288,70 @@ enum FormaPagamento {
   CARTAO_DEBITO
   CARTAO_CREDITO
   PIX
+  A_PRAZO
 }
 
 enum StatusVenda {
   CONCLUIDA
   CANCELADA
   PENDENTE
+}
+
+// ═══════════════════════════════════════════════════════
+// PARCELA DE VENDA A PRAZO
+//
+// Uma venda "a prazo" pode ser dividida em várias parcelas, cada
+// uma com sua própria data de vencimento (sempre +1 mês a partir
+// da primeira, no mesmo dia) e valor atual.
+//
+// `valorOriginal` é fixo, definido na criação (valor_total dividido
+// igualmente pelo número de parcelas). `valorAtual` é o que
+// efetivamente falta pagar dessa parcela — muda quando um pagamento
+// é registrado: a lógica de negócio (no controller) abate primeiro
+// a parcela mais próxima do vencimento e redistribui qualquer
+// sobra igualmente entre as parcelas futuras ainda PENDENTES.
+model ParcelaFiado {
+  id             Int      @id @default(autoincrement())
+  numero         Int      // 1, 2, 3... — ordem dentro da venda
+  dataVencimento DateTime
+  valorOriginal  Float
+  valorAtual     Float
+  status         StatusParcela @default(PENDENTE)
+
+  saleId         Int
+  sale           Sale     @relation(fields: [saleId], references: [id])
+
+  pagamentos     PagamentoFiado[]
+}
+
+enum StatusParcela {
+  PENDENTE
+  PAGA
+}
+
+// ═══════════════════════════════════════════════════════
+// PAGAMENTO DE FIADO
+//
+// Cada linha registra um pagamento (parcial ou total) recebido.
+// Vinculado à parcela que foi abatida primeiro — se o pagamento
+// for maior que o saldo dessa parcela, o excedente redistribui o
+// valorAtual das parcelas futuras (lógica no controller), mas o
+// registro do PagamentoFiado em si sempre aponta para a parcela
+// que originou o recebimento.
+// ═══════════════════════════════════════════════════════
+model PagamentoFiado {
+  id          Int      @id @default(autoincrement())
+  valor       Float
+  data        DateTime @default(now())
+
+  saleId      Int
+  sale        Sale     @relation(fields: [saleId], references: [id])
+
+  parcelaId   Int?
+  parcela     ParcelaFiado? @relation(fields: [parcelaId], references: [id])
+
+  userId      Int      // quem registrou o recebimento (ADMIN/GERENTE)
+  user        User     @relation(fields: [userId], references: [id])
 }
 
 // ═══════════════════════════════════════════════════════
