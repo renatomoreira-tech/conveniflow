@@ -6,7 +6,6 @@ import {
   ShoppingBag,
   Receipt,
   Wallet,
-  Tag,
   Truck,
   BarChart3,
   Users,
@@ -16,50 +15,28 @@ import {
 // Cada item de menu carrega um `modulo` correspondente ao nome usado
 // em Negocio.modulosAtivos (backend). Dashboard não tem módulo —
 // está sempre visível, é a página inicial de qualquer usuário.
+// "categorias" foi removido: a gestão de categoria/subcategoria
+// agora acontece direto dentro de Produtos, não precisa mais de
+// tela própria.
 const MENU_ITEMS = [
-  {
-    path: "/dashboard",
-    icon: LayoutDashboard,
-    label: "Dashboard",
-    modulo: null,
-  },
-  {
-    path: "/produtos",
-    icon: ShoppingBag,
-    label: "Produtos",
-    modulo: "produtos",
-  },
-  { path: "/vendas", icon: Receipt, label: "Vendas", modulo: "vendas" },
-  { path: "/clientes", icon: Users, label: "Clientes", modulo: "clientes" },
-  { path: "/caixa", icon: Wallet, label: "Caixa", modulo: "caixa" },
+  { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard", modulo: null },
+  { path: "/produtos",  icon: ShoppingBag,     label: "Produtos",  modulo: "produtos" },
+  { path: "/vendas",    icon: Receipt,         label: "Vendas",    modulo: "vendas" },
+  { path: "/clientes",  icon: Users,           label: "Clientes",  modulo: "clientes" },
+  { path: "/caixa",     icon: Wallet,          label: "Caixa",     modulo: "caixa" },
 ];
 
 const MENU_ADMIN = [
-  { path: "/categorias", icon: Tag, label: "Categorias", modulo: "categorias" },
-  {
-    path: "/fornecedores",
-    icon: Truck,
-    label: "Fornecedores",
-    modulo: "fornecedores",
-  },
-  {
-    path: "/relatorios",
-    icon: BarChart3,
-    label: "Relatórios",
-    modulo: "relatorios",
-  },
+  { path: "/fornecedores", icon: Truck,     label: "Fornecedores", modulo: "fornecedores" },
+  { path: "/relatorios",   icon: BarChart3, label: "Relatórios",   modulo: "relatorios" },
 ];
 
 export default function Layout({ children }) {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate  = useNavigate();
+  const location  = useLocation();
   const { usuario, logout } = useAuth();
   const role = usuario?.role;
 
-  // Lista de módulos que o negócio deste usuário tem ativados,
-  // vinda do login e salva no localStorage/AuthContext. Se por
-  // algum motivo não vier nada, assume um array vazio (nenhum
-  // módulo extra visível, só o Dashboard) em vez de quebrar.
   const modulosAtivos = usuario?.modulosAtivos ?? [];
 
   const itemsPorRole =
@@ -67,9 +44,6 @@ export default function Layout({ children }) {
       ? [...MENU_ITEMS, ...MENU_ADMIN]
       : MENU_ITEMS;
 
-  // Filtra por módulo ativo: um item sem `modulo` (como o Dashboard)
-  // sempre aparece; os demais só aparecem se o nome do módulo estiver
-  // na lista modulosAtivos do negócio.
   const allItems = itemsPorRole.filter(
     (item) => !item.modulo || modulosAtivos.includes(item.modulo),
   );
@@ -104,9 +78,6 @@ export default function Layout({ children }) {
             );
           })}
 
-          {/* Configurações fica fora da filtragem de módulos —
-              é sobre o próprio sistema, não um módulo de operação,
-              e só ADMIN pode mexer nisso. */}
           {role === "ADMIN" && (
             <div
               onClick={() => navigate("/configuracoes")}

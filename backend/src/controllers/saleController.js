@@ -118,12 +118,24 @@ async function createSale(req, res) {
         include: { itens: true },
       });
 
-      // Atualiza estoque de cada produto
+      // Atualiza estoque de cada produto e registra a saída no
+      // histórico de movimentações, para manter rastreabilidade
+      // igual às entradas manuais.
       for (const item of itens) {
         const product = products.find((p) => p.id === item.productId);
         await tx.product.update({
           where: { id: item.productId },
           data: { estoque: product.estoque - item.quantidade },
+        });
+
+        await tx.movimentoEstoque.create({
+          data: {
+            productId: item.productId,
+            tipo: "SAIDA",
+            quantidade: item.quantidade,
+            motivo: `Venda #${novaVenda.id}`,
+            userId,
+          },
         });
       }
 
@@ -213,7 +225,9 @@ async function cancelSale(req, res) {
       return res.status(400).json({ error: "Venda já cancelada" });
     }
 
-    // Cancela a venda e devolve o estoque em uma transação
+    // Cancela a venda e devolve o estoque em uma transação,
+    // registrando cada devolução no histórico de movimentações.
+    const { id: userId } = req.usuario;
     await prisma.$transaction(async (tx) => {
       await tx.sale.update({
         where: { id: Number(id) },
@@ -224,6 +238,16 @@ async function cancelSale(req, res) {
         await tx.product.update({
           where: { id: item.productId },
           data: { estoque: { increment: item.quantidade } },
+        });
+
+        await tx.movimentoEstoque.create({
+          data: {
+            productId: item.productId,
+            tipo: "ENTRADA",
+            quantidade: item.quantidade,
+            motivo: `Cancelamento da venda #${id}`,
+            userId,
+          },
         });
       }
     });

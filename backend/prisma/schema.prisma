@@ -81,6 +81,7 @@ model User {
   lojas      UsuarioLoja[]
   sales      Sale[]
   usuarioNegocios UsuarioNegocio[]
+  movimentosEstoque MovimentoEstoque[]
 }
 
 // Relação N:N entre User e Loja, com o role específico naquele vínculo.
@@ -135,6 +136,19 @@ model Cliente {
 
 // ═══════════════════════════════════════════════════════
 // CATEGORIAS (por loja)
+//
+// Suporta até 2 níveis: uma Categoria "raiz" (ex: Perfumes) pode
+// ter Subcategorias (ex: Masculino, Feminino) através do campo
+// categoriaPaiId, que aponta para a própria tabela Categoria.
+//
+// Uma Categoria SEM categoriaPaiId é uma categoria raiz (nível 1).
+// Uma Categoria COM categoriaPaiId é uma subcategoria (nível 2) —
+// e nesse caso, não pode ter subcategorias dela mesma (o backend
+// valida isso no controller, não dá pra impedir só com o schema).
+//
+// Produto pode apontar tanto para uma categoria raiz (ex: uma loja
+// de conveniência usando só "Bebidas", sem dividir mais) quanto
+// para uma subcategoria (ex: "Masculino" dentro de "Perfumes").
 // ═══════════════════════════════════════════════════════
 model Categoria {
   id       Int       @id @default(autoincrement())
@@ -143,9 +157,15 @@ model Categoria {
   lojaId   Int
   loja     Loja      @relation(fields: [lojaId], references: [id])
 
+  // Auto-relacionamento: se preenchido, esta categoria é uma
+  // subcategoria de outra. Se null, é uma categoria raiz.
+  categoriaPaiId Int?
+  categoriaPai   Categoria?  @relation("SubcategoriaDe", fields: [categoriaPaiId], references: [id])
+  subcategorias  Categoria[] @relation("SubcategoriaDe")
+
   produtos Product[]
 
-  @@unique([nome, lojaId]) // nome único dentro da mesma loja, não globalmente
+  @@unique([nome, lojaId, categoriaPaiId]) // nome único dentro do mesmo pai e loja
 }
 
 // ═══════════════════════════════════════════════════════
@@ -185,8 +205,42 @@ model Product {
   fornecedor     Fornecedor? @relation(fields: [fornecedorId], references: [id])
 
   itensVenda     ItemVenda[]
+  movimentos     MovimentoEstoque[]
 
   @@unique([codigoBarras, lojaId]) // código de barras único por loja, não globalmente
+}
+
+// ═══════════════════════════════════════════════════════
+// MOVIMENTO DE ESTOQUE
+//
+// Registra cada entrada ou saída de estoque de um produto, com
+// data e motivo. O campo `estoque` do Product continua sendo o
+// número atual (fica sempre atualizado a cada movimento), mas
+// esta tabela guarda o histórico de como ele chegou naquele valor.
+//
+// Saídas por venda são registradas automaticamente pelo
+// saleController (tipo SAIDA, motivo "Venda #123"). Entradas
+// manuais (reposição de fornecedor, por exemplo) são registradas
+// pelo usuário através do botão "+ Registrar entrada" na tela
+// de Produtos.
+// ═══════════════════════════════════════════════════════
+model MovimentoEstoque {
+  id         Int              @id @default(autoincrement())
+  tipo       TipoMovimento
+  quantidade Int              // sempre positivo; o `tipo` indica se soma ou subtrai
+  motivo     String?
+  data       DateTime         @default(now())
+
+  productId  Int
+  product    Product          @relation(fields: [productId], references: [id])
+
+  userId     Int?             // quem registrou (null para movimentos automáticos antigos, se houver)
+  user       User?            @relation(fields: [userId], references: [id])
+}
+
+enum TipoMovimento {
+  ENTRADA
+  SAIDA
 }
 
 // ═══════════════════════════════════════════════════════

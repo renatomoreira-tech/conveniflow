@@ -9,6 +9,7 @@ const fornecedorRoutes = require("./routes/fornecedorRoutes");
 const caixaRoutes = require("./routes/caixaRoutes");
 const clienteRoutes = require("./routes/clienteRoutes");
 const negocioRoutes = require("./routes/negocioRoutes");
+const movimentoEstoqueRoutes = require("./routes/movimentoEstoqueRoutes");
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use(fornecedorRoutes);
 app.use(caixaRoutes);
 app.use(clienteRoutes);
 app.use(negocioRoutes);
+app.use(movimentoEstoqueRoutes);
 
 // ─── ROTA BASE ───────────────────────────────────────────
 app.get("/", (req, res) => {

@@ -45,7 +45,9 @@ async function getProducts(req, res) {
     const products = await prisma.product.findMany({
       where: { ativo: true, lojaId },
       include: {
-        categoria: true,
+        categoria: {
+          include: { categoriaPai: true }, // para montar "Perfumes > Masculino" no frontend
+        },
         fornecedor: true,
       },
     });

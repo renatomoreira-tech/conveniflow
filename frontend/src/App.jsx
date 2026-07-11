@@ -9,7 +9,6 @@ import Dashboard from "./pages/Dashboard";
 import Produtos from "./pages/Produtos";
 import Relatorios from "./pages/Relatorios";
 import Vendas from "./pages/Vendas";
-import Categorias from "./pages/Categorias";
 import Fornecedores from "./pages/Fornecedores";
 import Caixa from "./pages/Caixa";
 import Clientes from "./pages/Clientes";
@@ -71,16 +70,6 @@ function AppComTema() {
               <RotaProtegida>
                 <Layout>
                   <Vendas />
-                </Layout>
-              </RotaProtegida>
-            }
-          />
-          <Route
-            path="/categorias"
-            element={
-              <RotaProtegida>
-                <Layout>
-                  <Categorias />
                 </Layout>
               </RotaProtegida>
             }
