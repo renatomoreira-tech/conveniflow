@@ -17,6 +17,13 @@ export default function Dashboard() {
   const role = usuario?.role;
   const navigate = useNavigate();
 
+  // Módulos ativos do negócio deste usuário (vem do login, salvo
+  // no localStorage/AuthContext). Usado para esconder cards e ações
+  // do Dashboard que dependem de um módulo desativado — mesmo
+  // critério já aplicado no menu lateral (Layout.jsx).
+  const modulosAtivos = usuario?.modulosAtivos ?? [];
+  const temModulo = (modulo) => modulosAtivos.includes(modulo);
+
   const [ultimasVendas, setUltimasVendas] = useState([]);
   const [totalHoje, setTotalHoje] = useState(0);
   const [quantidadeHoje, setQuantidadeHoje] = useState(0);
@@ -30,12 +37,23 @@ export default function Dashboard() {
 
   async function carregarDados() {
     try {
+      // Só busca dados de um módulo se ele estiver ativo — evita
+      // chamadas desnecessárias (e possíveis erros 403/404) para
+      // recursos que o negócio nem usa.
       const [resumoRes, produtosRes, caixaRes] = await Promise.all([
-        api.get("/sales/resumo-hoje").catch(() => ({
-          data: { ultimasVendas: [], totalHoje: 0, quantidade: 0 },
-        })),
-        api.get("/products").catch(() => ({ data: [] })),
-        api.get("/caixa/atual").catch(() => ({ data: null })),
+        temModulo("vendas")
+          ? api.get("/sales/resumo-hoje").catch(() => ({
+              data: { ultimasVendas: [], totalHoje: 0, quantidade: 0 },
+            }))
+          : Promise.resolve({
+              data: { ultimasVendas: [], totalHoje: 0, quantidade: 0 },
+            }),
+        temModulo("produtos")
+          ? api.get("/products").catch(() => ({ data: [] }))
+          : Promise.resolve({ data: [] }),
+        temModulo("caixa")
+          ? api.get("/caixa/atual").catch(() => ({ data: null }))
+          : Promise.resolve({ data: null }),
       ]);
 
       setUltimasVendas(resumoRes.data.ultimasVendas || []);
@@ -92,132 +110,149 @@ export default function Dashboard() {
 
       {/* ─── MÉTRICAS ─── */}
       <div style={s.metricasGrid}>
-        <MetricaCard
-          iconBg="var(--color-badge-blue-bg)"
-          iconColor="var(--color-badge-blue-text)"
-          Icon={DollarSign}
-          label="Vendas hoje"
-          valor={`R$ ${totalHoje.toFixed(2)}`}
-        />
-        <MetricaCard
-          iconBg="var(--color-badge-green-bg)"
-          iconColor="var(--color-badge-green-text)"
-          Icon={ShoppingCart}
-          label="Pedidos"
-          valor={quantidadeHoje}
-        />
-        <MetricaCard
-          iconBg="var(--color-badge-purple-bg)"
-          iconColor="var(--color-badge-purple-text)"
-          Icon={Receipt}
-          label="Ticket médio"
-          valor={`R$ ${ticketMedio.toFixed(2)}`}
-        />
-        <MetricaCard
-          iconBg={
-            estoqueBaixo > 0
-              ? "var(--color-warning-bg)"
-              : "var(--color-badge-green-bg)"
-          }
-          iconColor={
-            estoqueBaixo > 0
-              ? "var(--color-warning-text)"
-              : "var(--color-badge-green-text)"
-          }
-          Icon={estoqueBaixo > 0 ? AlertTriangle : CircleCheck}
-          label="Estoque baixo"
-          valor={estoqueBaixo}
-          delta={estoqueBaixo > 0 ? "produtos abaixo do mínimo" : "estoque OK"}
-          deltaColor={
-            estoqueBaixo > 0 ? "var(--color-warning)" : "var(--color-success)"
-          }
-        />
+        {temModulo("vendas") && (
+          <>
+            <MetricaCard
+              iconBg="var(--color-badge-blue-bg)"
+              iconColor="var(--color-badge-blue-text)"
+              Icon={DollarSign}
+              label="Vendas hoje"
+              valor={`R$ ${totalHoje.toFixed(2)}`}
+            />
+            <MetricaCard
+              iconBg="var(--color-badge-green-bg)"
+              iconColor="var(--color-badge-green-text)"
+              Icon={ShoppingCart}
+              label="Pedidos"
+              valor={quantidadeHoje}
+            />
+            <MetricaCard
+              iconBg="var(--color-badge-purple-bg)"
+              iconColor="var(--color-badge-purple-text)"
+              Icon={Receipt}
+              label="Ticket médio"
+              valor={`R$ ${ticketMedio.toFixed(2)}`}
+            />
+          </>
+        )}
+        {temModulo("produtos") && (
+          <MetricaCard
+            iconBg={
+              estoqueBaixo > 0
+                ? "var(--color-warning-bg)"
+                : "var(--color-badge-green-bg)"
+            }
+            iconColor={
+              estoqueBaixo > 0
+                ? "var(--color-warning-text)"
+                : "var(--color-badge-green-text)"
+            }
+            Icon={estoqueBaixo > 0 ? AlertTriangle : CircleCheck}
+            label="Estoque baixo"
+            valor={estoqueBaixo}
+            delta={
+              estoqueBaixo > 0 ? "produtos abaixo do mínimo" : "estoque OK"
+            }
+            deltaColor={
+              estoqueBaixo > 0 ? "var(--color-warning)" : "var(--color-success)"
+            }
+          />
+        )}
       </div>
 
       {/* ─── CONTEÚDO INFERIOR ─── */}
       <div style={s.bottomGrid}>
         {/* ─── ÚLTIMAS VENDAS ─── */}
-        <div style={s.card}>
-          <h3 style={s.cardTitulo}>Últimas vendas</h3>
-          {ultimasVendas.length === 0 ? (
-            <p style={s.vazio}>Nenhuma venda registrada ainda</p>
-          ) : (
-            ultimasVendas.map((venda) => (
-              <div key={venda.id} style={s.vendaItem}>
-                <div>
-                  <p style={s.vendaNome}>
-                    {venda.itens
-                      ?.map((i) => `${i.product?.nome} x${i.quantidade}`)
-                      .join(", ")}
-                  </p>
-                  <p style={s.vendaHora}>
-                    {formatarDataVenda(venda.data_venda)}
-                    {" — "}
-                    {venda.user?.nome}
-                  </p>
+        {temModulo("vendas") && (
+          <div style={s.card}>
+            <h3 style={s.cardTitulo}>Últimas vendas</h3>
+            {ultimasVendas.length === 0 ? (
+              <p style={s.vazio}>Nenhuma venda registrada ainda</p>
+            ) : (
+              ultimasVendas.map((venda) => (
+                <div key={venda.id} style={s.vendaItem}>
+                  <div>
+                    <p style={s.vendaNome}>
+                      {venda.itens
+                        ?.map((i) => `${i.product?.nome} x${i.quantidade}`)
+                        .join(", ")}
+                    </p>
+                    <p style={s.vendaHora}>
+                      {formatarDataVenda(venda.data_venda)}
+                      {" — "}
+                      {venda.user?.nome}
+                    </p>
+                  </div>
+                  <div style={s.vendaDireita}>
+                    <p style={s.vendaValor}>
+                      R$ {venda.valor_total.toFixed(2)}
+                    </p>
+                    <BadgePagamento forma={venda.formaPagamento} />
+                  </div>
                 </div>
-                <div style={s.vendaDireita}>
-                  <p style={s.vendaValor}>R$ {venda.valor_total.toFixed(2)}</p>
-                  <BadgePagamento forma={venda.formaPagamento} />
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+              ))
+            )}
+          </div>
+        )}
 
         {/* ─── LADO DIREITO ─── */}
         <div style={s.rightCol}>
           {/* ─── CAIXA ─── */}
-          <div style={s.card}>
-            <h3 style={s.cardTitulo}>Caixa</h3>
-            {caixaAtual ? (
-              <>
+          {temModulo("caixa") && (
+            <div style={s.card}>
+              <h3 style={s.cardTitulo}>Caixa</h3>
+              {caixaAtual ? (
+                <>
+                  <div style={s.caixaStatus}>
+                    <div
+                      style={{
+                        ...s.caixaDot,
+                        backgroundColor: "var(--color-success)",
+                      }}
+                    />
+                    <span style={s.caixaTexto}>Aberto</span>
+                  </div>
+                  <p style={s.caixaInfo}>
+                    Abertura: R$ {caixaAtual.valorInicial.toFixed(2)}
+                  </p>
+                  <p style={s.caixaInfo}>
+                    Desde{" "}
+                    {new Date(caixaAtual.abertura).toLocaleTimeString("pt-BR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </>
+              ) : (
                 <div style={s.caixaStatus}>
                   <div
                     style={{
                       ...s.caixaDot,
-                      backgroundColor: "var(--color-success)",
+                      backgroundColor: "var(--color-warning)",
                     }}
                   />
-                  <span style={s.caixaTexto}>Aberto</span>
+                  <span style={s.caixaTexto}>Fechado</span>
                 </div>
-                <p style={s.caixaInfo}>
-                  Abertura: R$ {caixaAtual.valorInicial.toFixed(2)}
-                </p>
-                <p style={s.caixaInfo}>
-                  Desde{" "}
-                  {new Date(caixaAtual.abertura).toLocaleTimeString("pt-BR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-              </>
-            ) : (
-              <div style={s.caixaStatus}>
-                <div
-                  style={{
-                    ...s.caixaDot,
-                    backgroundColor: "var(--color-warning)",
-                  }}
-                />
-                <span style={s.caixaTexto}>Fechado</span>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           {/* ─── AÇÕES RÁPIDAS ─── */}
           <div style={s.card}>
             <h3 style={s.cardTitulo}>Ações rápidas</h3>
-            <button onClick={() => navigate("/vendas")} style={s.acaoBtn}>
-              <Plus size={14} style={s.acaoBtnIcon} aria-hidden="true" />
-              Nova venda ↗
-            </button>
-            {(role === "ADMIN" || role === "GERENTE") && (
-              <button onClick={() => navigate("/produtos")} style={s.acaoBtn}>
-                <Package size={14} style={s.acaoBtnIcon} aria-hidden="true" />
-                Novo produto ↗
+            {temModulo("vendas") && (
+              <button onClick={() => navigate("/vendas")} style={s.acaoBtn}>
+                <Plus size={14} style={s.acaoBtnIcon} aria-hidden="true" />
+                Nova venda ↗
               </button>
             )}
+            {temModulo("produtos") &&
+              (role === "ADMIN" || role === "GERENTE") && (
+                <button onClick={() => navigate("/produtos")} style={s.acaoBtn}>
+                  <Package size={14} style={s.acaoBtnIcon} aria-hidden="true" />
+                  Novo produto ↗
+                </button>
+              )}
           </div>
         </div>
       </div>
