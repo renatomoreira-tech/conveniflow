@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
@@ -7,13 +7,21 @@ export default function Login() {
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
+  const [mobile, setMobile] = useState(false);
+
+  useEffect(() => {
+    const atualizar = () => setMobile(window.innerWidth <= 768);
+    atualizar();
+    window.addEventListener("resize", atualizar);
+    return () => window.removeEventListener("resize", atualizar);
+  }, []);
 
   async function handleLogin(e) {
-    e.preventDefault(); // agora funciona de verdade, pois está num <form onSubmit>
+    e.preventDefault();
     setErro("");
     setCarregando(true);
     try {
-      await login(usuario, senha); // AuthContext já redireciona (dashboard ou trocar-senha)
+      await login(usuario, senha);
     } catch {
       setErro("Usuário ou senha inválidos");
     } finally {
@@ -23,7 +31,7 @@ export default function Login() {
 
   return (
     <div style={s.container}>
-      <div style={s.card}>
+      <div style={mobile ? { ...s.card, padding: "24px 18px" } : s.card}>
         <img src="/icon.svg" alt="" style={s.logo} />
         <h1 style={s.titulo}>GestorFlow</h1>
         <p style={s.subtitulo}>Sistema de Gestão</p>
@@ -96,6 +104,8 @@ const s = {
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "var(--color-background-tertiary)",
+    padding: "20px",
+    boxSizing: "border-box",
   },
   card: {
     backgroundColor: "var(--color-background-primary)",
@@ -105,6 +115,7 @@ const s = {
     width: "100%",
     maxWidth: "380px",
     textAlign: "center",
+    boxSizing: "border-box",
   },
   logo: {
     width: "56px",

@@ -23,9 +23,17 @@ export default function Configuracoes() {
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
+  const [mobile, setMobile] = useState(false);
 
   useEffect(() => {
     carregarNegocio();
+  }, []);
+
+  useEffect(() => {
+    const atualizar = () => setMobile(window.innerWidth <= 768);
+    atualizar();
+    window.addEventListener("resize", atualizar);
+    return () => window.removeEventListener("resize", atualizar);
   }, []);
 
   async function carregarNegocio() {
@@ -76,7 +84,7 @@ export default function Configuracoes() {
         </h2>
       </div>
 
-      <div style={s.card}>
+      <div style={mobile ? { ...s.card, padding: "18px" } : s.card}>
         <h3 style={s.cardTitulo}>{negocio?.nome}</h3>
         <p style={s.cardDescricao}>
           Escolha quais módulos aparecem no menu do sistema. Módulos desmarcados

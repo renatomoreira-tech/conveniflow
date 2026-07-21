@@ -9,9 +9,17 @@ export default function Caixa() {
   const [valorInicial, setValorInicial] = useState("");
   const [valorFinal, setValorFinal] = useState("");
   const [erro, setErro] = useState("");
+  const [mobile, setMobile] = useState(false);
 
   useEffect(() => {
     carregarDados();
+  }, []);
+
+  useEffect(() => {
+    const atualizar = () => setMobile(window.innerWidth <= 768);
+    atualizar();
+    window.addEventListener("resize", atualizar);
+    return () => window.removeEventListener("resize", atualizar);
   }, []);
 
   async function carregarDados() {
@@ -75,7 +83,7 @@ export default function Caixa() {
       </div>
 
       {/* ─── CAIXA ATUAL ─── */}
-      <div style={s.caixaCard}>
+      <div style={mobile ? { ...s.caixaCard, padding: "18px" } : s.caixaCard}>
         {caixaAtual ? (
           <>
             <div style={s.caixaStatus}>
@@ -93,15 +101,18 @@ export default function Caixa() {
               Valor inicial:{" "}
               <strong>R$ {caixaAtual.valorInicial.toFixed(2)}</strong>
             </p>
-            <div style={s.fecharBox}>
+            <div style={mobile ? { ...s.fecharBox, ...s.boxMobile } : s.fecharBox}>
               <input
                 type="number"
                 placeholder="Valor final em caixa"
                 value={valorFinal}
                 onChange={(e) => setValorFinal(e.target.value)}
-                style={s.inputFechar}
+                style={mobile ? { ...s.inputFechar, width: "100%" } : s.inputFechar}
               />
-              <button onClick={handleFecharCaixa} style={s.botaoFechar}>
+              <button
+                onClick={handleFecharCaixa}
+                style={mobile ? { ...s.botaoFechar, width: "100%" } : s.botaoFechar}
+              >
                 Fechar Caixa
               </button>
             </div>
@@ -111,15 +122,18 @@ export default function Caixa() {
             <div style={s.caixaStatus}>
               <span style={s.statusFechado}>CAIXA FECHADO</span>
             </div>
-            <div style={s.abrirBox}>
+            <div style={mobile ? { ...s.abrirBox, ...s.boxMobile } : s.abrirBox}>
               <input
                 type="number"
                 placeholder="Valor inicial em caixa"
                 value={valorInicial}
                 onChange={(e) => setValorInicial(e.target.value)}
-                style={s.inputAbrir}
+                style={mobile ? { ...s.inputAbrir, width: "100%" } : s.inputAbrir}
               />
-              <button onClick={handleAbrirCaixa} style={s.botaoAbrir}>
+              <button
+                onClick={handleAbrirCaixa}
+                style={mobile ? { ...s.botaoAbrir, width: "100%" } : s.botaoAbrir}
+              >
                 Abrir Caixa
               </button>
             </div>
@@ -131,6 +145,7 @@ export default function Caixa() {
       {/* ─── HISTÓRICO ─── */}
       <div style={s.tabelaContainer}>
         <h3 style={s.tabelaTitulo}>Histórico de Caixas</h3>
+        <div style={s.tabelaScroll}>
         <table style={s.tabela}>
           <thead>
             <tr style={s.thead}>
@@ -197,6 +212,7 @@ export default function Caixa() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );
@@ -257,6 +273,7 @@ const s = {
   },
   abrirBox: { display: "flex", gap: "10px", alignItems: "center" },
   fecharBox: { display: "flex", gap: "10px", alignItems: "center" },
+  boxMobile: { flexDirection: "column", alignItems: "stretch" },
   inputAbrir: {
     padding: "9px 12px",
     borderRadius: "var(--border-radius-md)",
@@ -311,7 +328,8 @@ const s = {
     color: "var(--color-text-primary)",
     marginBottom: "14px",
   },
-  tabela: { width: "100%", borderCollapse: "collapse" },
+  tabelaScroll: { overflowX: "auto" },
+  tabela: { width: "100%", minWidth: "640px", borderCollapse: "collapse" },
   thead: { backgroundColor: "var(--color-background-secondary)" },
   th: {
     padding: "12px 16px",

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
@@ -9,6 +9,14 @@ export default function TrocarSenha() {
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
+  const [mobile, setMobile] = useState(false);
+
+  useEffect(() => {
+    const atualizar = () => setMobile(window.innerWidth <= 768);
+    atualizar();
+    window.addEventListener("resize", atualizar);
+    return () => window.removeEventListener("resize", atualizar);
+  }, []);
 
   async function handleSalvar(e) {
     e.preventDefault();
@@ -36,7 +44,7 @@ export default function TrocarSenha() {
 
   return (
     <div style={s.container}>
-      <div style={s.card}>
+      <div style={mobile ? { ...s.card, padding: "24px 18px" } : s.card}>
         <img src="/icon.svg" alt="" style={s.logo} />
         <h1 style={s.titulo}>Troque sua senha</h1>
         <p style={s.subtitulo}>
@@ -118,6 +126,8 @@ const s = {
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "var(--color-background-tertiary)",
+    padding: "20px",
+    boxSizing: "border-box",
   },
   card: {
     backgroundColor: "var(--color-background-primary)",
@@ -127,6 +137,7 @@ const s = {
     width: "100%",
     maxWidth: "380px",
     textAlign: "center",
+    boxSizing: "border-box",
   },
   logo: {
     width: "56px",

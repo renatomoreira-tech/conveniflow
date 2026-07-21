@@ -30,9 +30,17 @@ export default function Dashboard() {
   const [estoqueBaixo, setEstoqueBaixo] = useState(0);
   const [caixaAtual, setCaixaAtual] = useState(null);
   const [carregando, setCarregando] = useState(true);
+  const [mobile, setMobile] = useState(false);
 
   useEffect(() => {
     carregarDados();
+  }, []);
+
+  useEffect(() => {
+    const atualizar = () => setMobile(window.innerWidth <= 768);
+    atualizar();
+    window.addEventListener("resize", atualizar);
+    return () => window.removeEventListener("resize", atualizar);
   }, []);
 
   async function carregarDados() {
@@ -95,10 +103,36 @@ export default function Dashboard() {
     );
   }
 
+  const headerStyle = mobile
+    ? {
+        ...s.header,
+        flexDirection: "column",
+        gap: "8px",
+        alignItems: "flex-start",
+      }
+    : s.header;
+  const metricasGridStyle = mobile
+    ? { ...s.metricasGrid, gridTemplateColumns: "1fr" }
+    : s.metricasGrid;
+  const bottomGridStyle = mobile
+    ? { ...s.bottomGrid, gridTemplateColumns: "1fr" }
+    : s.bottomGrid;
+  const vendaItemStyle = mobile
+    ? {
+        ...s.vendaItem,
+        flexDirection: "column",
+        alignItems: "flex-start",
+        gap: "6px",
+      }
+    : s.vendaItem;
+  const vendaDireitaStyle = mobile
+    ? { ...s.vendaDireita, textAlign: "left" }
+    : s.vendaDireita;
+
   return (
     <div>
       {/* ─── HEADER ─── */}
-      <div style={s.header}>
+      <div style={headerStyle}>
         <div>
           <h2 style={s.saudacao}>
             {saudacao()}, {usuario?.nome}
@@ -109,7 +143,7 @@ export default function Dashboard() {
       </div>
 
       {/* ─── MÉTRICAS ─── */}
-      <div style={s.metricasGrid}>
+      <div style={metricasGridStyle}>
         {temModulo("vendas") && (
           <>
             <MetricaCard
@@ -161,7 +195,7 @@ export default function Dashboard() {
       </div>
 
       {/* ─── CONTEÚDO INFERIOR ─── */}
-      <div style={s.bottomGrid}>
+      <div style={bottomGridStyle}>
         {/* ─── ÚLTIMAS VENDAS ─── */}
         {temModulo("vendas") && (
           <div style={s.card}>
@@ -170,7 +204,7 @@ export default function Dashboard() {
               <p style={s.vazio}>Nenhuma venda registrada ainda</p>
             ) : (
               ultimasVendas.map((venda) => (
-                <div key={venda.id} style={s.vendaItem}>
+                <div key={venda.id} style={vendaItemStyle}>
                   <div>
                     <p style={s.vendaNome}>
                       {venda.itens
@@ -183,7 +217,7 @@ export default function Dashboard() {
                       {venda.user?.nome}
                     </p>
                   </div>
-                  <div style={s.vendaDireita}>
+                  <div style={vendaDireitaStyle}>
                     <p style={s.vendaValor}>
                       R$ {venda.valor_total.toFixed(2)}
                     </p>

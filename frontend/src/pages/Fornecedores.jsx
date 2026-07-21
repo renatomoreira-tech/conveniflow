@@ -8,11 +8,19 @@ export default function Fornecedores() {
   const [modalAberto, setModalAberto] = useState(false);
   const [editando, setEditando] = useState(null);
   const [erro, setErro] = useState("");
+  const [mobile, setMobile] = useState(false);
 
   const [form, setForm] = useState({ nome: "", telefone: "", email: "" });
 
   useEffect(() => {
     carregarFornecedores();
+  }, []);
+
+  useEffect(() => {
+    const atualizar = () => setMobile(window.innerWidth <= 768);
+    atualizar();
+    window.addEventListener("resize", atualizar);
+    return () => window.removeEventListener("resize", atualizar);
   }, []);
 
   async function carregarFornecedores() {
@@ -78,18 +86,22 @@ export default function Fornecedores() {
 
   return (
     <div style={s.container}>
-      <div style={s.header}>
+      <div style={mobile ? { ...s.header, ...s.headerMobile } : s.header}>
         <h2 style={s.titulo}>
           <Truck size={20} style={s.tituloIcon} aria-hidden="true" />
           Fornecedores
         </h2>
-        <button onClick={() => abrirModal()} style={s.botaoNovo}>
+        <button
+          onClick={() => abrirModal()}
+          style={mobile ? { ...s.botaoNovo, width: "100%", justifyContent: "center" } : s.botaoNovo}
+        >
           <Plus size={14} aria-hidden="true" />
           Novo Fornecedor
         </button>
       </div>
 
       <div style={s.tabelaContainer}>
+        <div style={s.tabelaScroll}>
         <table style={s.tabela}>
           <thead>
             <tr style={s.thead}>
@@ -132,11 +144,15 @@ export default function Fornecedores() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {modalAberto && (
         <div style={s.overlay} onClick={() => setModalAberto(false)}>
-          <div style={s.modal} onClick={(e) => e.stopPropagation()}>
+          <div
+            style={mobile ? { ...s.modal, padding: "22px 18px" } : s.modal}
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 style={s.modalTitulo}>
               {editando ? "Editar Fornecedor" : "Novo Fornecedor"}
             </h3>
@@ -196,6 +212,11 @@ const s = {
     alignItems: "center",
     marginBottom: "20px",
   },
+  headerMobile: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: "10px",
+  },
   titulo: {
     fontSize: "18px",
     fontWeight: "500",
@@ -226,7 +247,8 @@ const s = {
     border: "0.5px solid var(--color-border-tertiary)",
     overflow: "hidden",
   },
-  tabela: { width: "100%", borderCollapse: "collapse" },
+  tabelaScroll: { overflowX: "auto" },
+  tabela: { width: "100%", minWidth: "600px", borderCollapse: "collapse" },
   thead: { backgroundColor: "var(--color-background-secondary)" },
   th: {
     padding: "12px 16px",

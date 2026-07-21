@@ -8,6 +8,14 @@ export default function Clientes() {
   const [erro, setErro] = useState("");
   const [modalAberto, setModalAberto] = useState(false);
   const [clienteEditando, setClienteEditando] = useState(null);
+  const [mobile, setMobile] = useState(false);
+
+  useEffect(() => {
+    const atualizar = () => setMobile(window.innerWidth <= 768);
+    atualizar();
+    window.addEventListener("resize", atualizar);
+    return () => window.removeEventListener("resize", atualizar);
+  }, []);
 
   const [form, setForm] = useState({
     nome: "",
@@ -87,12 +95,15 @@ export default function Clientes() {
 
   return (
     <div style={s.container}>
-      <div style={s.header}>
+      <div style={mobile ? { ...s.header, ...s.headerMobile } : s.header}>
         <h2 style={s.titulo}>
           <Users size={20} style={s.tituloIcon} aria-hidden="true" />
           Clientes
         </h2>
-        <button onClick={() => abrirModal()} style={s.botaoNovo}>
+        <button
+          onClick={() => abrirModal()}
+          style={mobile ? { ...s.botaoNovo, width: "100%", justifyContent: "center" } : s.botaoNovo}
+        >
           <Plus size={14} aria-hidden="true" />
           Novo Cliente
         </button>
@@ -101,6 +112,7 @@ export default function Clientes() {
       {erro && !modalAberto && <p style={s.erroGeral}>{erro}</p>}
 
       <div style={s.tabelaContainer}>
+        <div style={s.tabelaScroll}>
         <table style={s.tabela}>
           <thead>
             <tr style={s.thead}>
@@ -150,11 +162,15 @@ export default function Clientes() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {modalAberto && (
         <div style={s.overlay} onClick={fecharModal}>
-          <div style={s.modal} onClick={(e) => e.stopPropagation()}>
+          <div
+            style={mobile ? { ...s.modal, padding: "22px 18px" } : s.modal}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div style={s.modalHeader}>
               <h3 style={s.modalTitulo}>
                 {clienteEditando ? "Editar Cliente" : "Novo Cliente"}
@@ -226,6 +242,11 @@ const s = {
     alignItems: "center",
     marginBottom: "20px",
   },
+  headerMobile: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: "10px",
+  },
   titulo: {
     fontSize: "18px",
     fontWeight: "500",
@@ -256,7 +277,8 @@ const s = {
     border: "0.5px solid var(--color-border-tertiary)",
     overflow: "hidden",
   },
-  tabela: { width: "100%", borderCollapse: "collapse" },
+  tabelaScroll: { overflowX: "auto" },
+  tabela: { width: "100%", minWidth: "560px", borderCollapse: "collapse" },
   thead: { backgroundColor: "var(--color-background-secondary)" },
   th: {
     padding: "12px 16px",

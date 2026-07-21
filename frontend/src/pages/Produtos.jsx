@@ -68,6 +68,14 @@ export default function Produtos() {
     useState(false);
   const [nomeNovaSubcategoria, setNomeNovaSubcategoria] = useState("");
   const [erroNovaSubcategoria, setErroNovaSubcategoria] = useState("");
+  const [mobile, setMobile] = useState(false);
+
+  useEffect(() => {
+    const atualizar = () => setMobile(window.innerWidth <= 768);
+    atualizar();
+    window.addEventListener("resize", atualizar);
+    return () => window.removeEventListener("resize", atualizar);
+  }, []);
 
   const [form, setForm] = useState({
     nome: "",
@@ -329,13 +337,16 @@ export default function Produtos() {
 
   return (
     <div style={s.container}>
-      <div style={s.header}>
+      <div style={mobile ? { ...s.header, ...s.headerMobile } : s.header}>
         <h2 style={s.titulo}>
           <ShoppingBag size={20} style={s.tituloIcon} aria-hidden="true" />
           Produtos
         </h2>
         {(role === "ADMIN" || role === "GERENTE") && (
-          <button onClick={() => abrirModal()} style={s.botaoNovo}>
+          <button
+            onClick={() => abrirModal()}
+            style={mobile ? { ...s.botaoNovo, width: "100%", justifyContent: "center" } : s.botaoNovo}
+          >
             <Plus size={14} aria-hidden="true" />
             Novo Produto
           </button>
@@ -345,6 +356,7 @@ export default function Produtos() {
       {erro && <p style={s.erro}>{erro}</p>}
 
       <div style={s.tabelaContainer}>
+        <div style={s.tabelaScroll}>
         <table style={s.tabela}>
           <thead>
             <tr style={s.thead}>
@@ -401,11 +413,15 @@ export default function Produtos() {
             })}
           </tbody>
         </table>
+        </div>
       </div>
 
       {modalAberto && (
         <div style={s.overlay} onClick={fecharModal}>
-          <div style={s.modal} onClick={(e) => e.stopPropagation()}>
+          <div
+            style={mobile ? { ...s.modal, padding: "20px 16px" } : s.modal}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div style={s.modalHeader}>
               <h3 style={s.modalTitulo}>
                 {produtoEditando ? "Editar Produto" : "Novo Produto"}
@@ -418,7 +434,7 @@ export default function Produtos() {
                 <X size={18} aria-hidden="true" />
               </button>
             </div>
-            <div style={s.grid}>
+            <div style={mobile ? { ...s.grid, gridTemplateColumns: "1fr" } : s.grid}>
               <div style={s.campo}>
                 <label style={s.label}>Nome</label>
                 <input
@@ -597,7 +613,10 @@ export default function Produtos() {
           style={s.overlayEntrada}
           onClick={() => setModalEntradaAberto(false)}
         >
-          <div style={s.modalEntrada} onClick={(e) => e.stopPropagation()}>
+          <div
+            style={mobile ? { ...s.modalEntrada, padding: "20px 16px" } : s.modalEntrada}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div style={s.modalHeader}>
               <h3 style={s.modalTitulo}>Registrar entrada</h3>
               <button
@@ -660,7 +679,10 @@ export default function Produtos() {
           style={s.overlayEntrada}
           onClick={() => setModalNovaCategoriaAberto(false)}
         >
-          <div style={s.modalEntrada} onClick={(e) => e.stopPropagation()}>
+          <div
+            style={mobile ? { ...s.modalEntrada, padding: "20px 16px" } : s.modalEntrada}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div style={s.modalHeader}>
               <h3 style={s.modalTitulo}>Nova categoria</h3>
               <button
@@ -706,7 +728,10 @@ export default function Produtos() {
           style={s.overlayEntrada}
           onClick={() => setModalNovaSubcategoriaAberto(false)}
         >
-          <div style={s.modalEntrada} onClick={(e) => e.stopPropagation()}>
+          <div
+            style={mobile ? { ...s.modalEntrada, padding: "20px 16px" } : s.modalEntrada}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div style={s.modalHeader}>
               <h3 style={s.modalTitulo}>
                 Nova subcategoria de {categoriaRaizSelecionada?.nome}
@@ -761,6 +786,11 @@ const s = {
     alignItems: "center",
     marginBottom: "20px",
   },
+  headerMobile: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: "10px",
+  },
   titulo: {
     fontSize: "18px",
     fontWeight: "500",
@@ -793,7 +823,8 @@ const s = {
     border: "0.5px solid var(--color-border-tertiary)",
     overflow: "hidden",
   },
-  tabela: { width: "100%", borderCollapse: "collapse" },
+  tabelaScroll: { overflowX: "auto" },
+  tabela: { width: "100%", minWidth: "620px", borderCollapse: "collapse" },
   thead: { backgroundColor: "var(--color-background-secondary)" },
   th: {
     padding: "12px 16px",

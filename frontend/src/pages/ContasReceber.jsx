@@ -18,9 +18,17 @@ export default function ContasReceber() {
   const [valorPagamento, setValorPagamento] = useState("");
   const [erroModal, setErroModal] = useState("");
   const [salvando, setSalvando] = useState(false);
+  const [mobile, setMobile] = useState(false);
 
   useEffect(() => {
     carregarContas();
+  }, []);
+
+  useEffect(() => {
+    const atualizar = () => setMobile(window.innerWidth <= 768);
+    atualizar();
+    window.addEventListener("resize", atualizar);
+    return () => window.removeEventListener("resize", atualizar);
   }, []);
 
   async function carregarContas() {
@@ -82,12 +90,12 @@ export default function ContasReceber() {
 
   return (
     <div style={s.container}>
-      <div style={s.header}>
+      <div style={mobile ? { ...s.header, ...s.headerMobile } : s.header}>
         <h2 style={s.titulo}>
           <Wallet size={20} style={s.tituloIcon} aria-hidden="true" />
           Contas a Receber
         </h2>
-        <div style={s.totalGeral}>
+        <div style={mobile ? { ...s.totalGeral, alignItems: "flex-start" } : s.totalGeral}>
           <span style={s.totalGeralLabel}>Total a receber</span>
           <span style={s.totalGeralValor}>
             R$ {totalGeralDevido.toFixed(2)}
@@ -103,8 +111,8 @@ export default function ContasReceber() {
         </div>
       ) : (
         contas.map((conta) => (
-          <div key={conta.saleId} style={s.contaCard}>
-            <div style={s.contaHeader}>
+          <div key={conta.saleId} style={mobile ? { ...s.contaCard, padding: "14px" } : s.contaCard}>
+            <div style={mobile ? { ...s.contaHeader, ...s.contaHeaderMobile } : s.contaHeader}>
               <div>
                 <p style={s.contaCliente}>
                   {conta.cliente?.nome || "Cliente não identificado"}
@@ -114,7 +122,7 @@ export default function ContasReceber() {
                   Total: R$ {conta.valorTotal.toFixed(2)}
                 </p>
               </div>
-              <div style={s.saldoBox}>
+              <div style={mobile ? { ...s.saldoBox, textAlign: "left" } : s.saldoBox}>
                 <span style={s.saldoLabel}>Saldo devedor</span>
                 <span style={s.saldoValor}>
                   R$ {conta.saldoDevedor.toFixed(2)}
@@ -124,7 +132,10 @@ export default function ContasReceber() {
 
             <div style={s.parcelasContainer}>
               {conta.parcelas.map((parcela) => (
-                <div key={parcela.id} style={s.parcelaRow}>
+                <div
+                  key={parcela.id}
+                  style={mobile ? { ...s.parcelaRow, ...s.parcelaRowMobile } : s.parcelaRow}
+                >
                   <div>
                     <p style={s.parcelaNumero}>
                       Parcela {parcela.numero} de {conta.parcelas.length}
@@ -137,7 +148,7 @@ export default function ContasReceber() {
                         ` — ${parcela.diasAtraso} dias em atraso`}
                     </p>
                   </div>
-                  <div style={s.parcelaDireita}>
+                  <div style={mobile ? { ...s.parcelaDireita, alignItems: "flex-start" } : s.parcelaDireita}>
                     <span style={s.parcelaValor}>
                       R$ {parcela.valorAtual.toFixed(2)}
                       {parcela.valorAtual !== parcela.valorOriginal &&
@@ -183,7 +194,10 @@ export default function ContasReceber() {
       {/* ─── MODAL REGISTRAR PAGAMENTO ─── */}
       {modalAberto && (
         <div style={s.overlay} onClick={() => setModalAberto(false)}>
-          <div style={s.modal} onClick={(e) => e.stopPropagation()}>
+          <div
+            style={mobile ? { ...s.modal, padding: "22px 18px" } : s.modal}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div style={s.modalHeader}>
               <h3 style={s.modalTitulo}>Registrar pagamento</h3>
               <button
@@ -252,6 +266,11 @@ const s = {
     alignItems: "center",
     marginBottom: "20px",
   },
+  headerMobile: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: "10px",
+  },
   titulo: {
     fontSize: "18px",
     fontWeight: "500",
@@ -312,6 +331,11 @@ const s = {
     paddingBottom: "14px",
     borderBottom: "0.5px solid var(--color-border-tertiary)",
   },
+  contaHeaderMobile: {
+    flexDirection: "column",
+    alignItems: "flex-start",
+    gap: "10px",
+  },
   contaCliente: {
     fontSize: "14px",
     fontWeight: "500",
@@ -350,6 +374,11 @@ const s = {
     padding: "8px 12px",
     backgroundColor: "var(--color-background-secondary)",
     borderRadius: "var(--border-radius-md)",
+  },
+  parcelaRowMobile: {
+    flexDirection: "column",
+    alignItems: "flex-start",
+    gap: "8px",
   },
   parcelaNumero: {
     fontSize: "12.5px",

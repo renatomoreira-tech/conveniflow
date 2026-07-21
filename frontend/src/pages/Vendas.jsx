@@ -40,9 +40,17 @@ export default function Vendas() {
   // Campo específico de crédito parcelado — só informativo, não
   // afeta status da venda nem exige cliente.
   const [numeroParcelas, setNumeroParcelas] = useState("");
+  const [mobile, setMobile] = useState(false);
 
   useEffect(() => {
     carregarDados();
+  }, []);
+
+  useEffect(() => {
+    const atualizar = () => setMobile(window.innerWidth <= 768);
+    atualizar();
+    window.addEventListener("resize", atualizar);
+    return () => window.removeEventListener("resize", atualizar);
   }, []);
 
   async function carregarDados() {
@@ -205,12 +213,15 @@ export default function Vendas() {
   return (
     <div style={s.container}>
       {/* ─── HEADER ─── */}
-      <div style={s.header}>
+      <div style={mobile ? { ...s.header, ...s.headerMobile } : s.header}>
         <h2 style={s.titulo}>
           <Receipt size={20} style={s.tituloIcon} aria-hidden="true" />
           Vendas
         </h2>
-        <button onClick={abrirModal} style={s.botaoNovo}>
+        <button
+          onClick={abrirModal}
+          style={mobile ? { ...s.botaoNovo, width: "100%", justifyContent: "center" } : s.botaoNovo}
+        >
           <Plus size={14} aria-hidden="true" />
           Nova Venda
         </button>
@@ -220,6 +231,7 @@ export default function Vendas() {
 
       {/* ─── TABELA DE VENDAS ─── */}
       <div style={s.tabelaContainer}>
+        <div style={s.tabelaScroll}>
         <table style={s.tabela}>
           <thead>
             <tr style={s.thead}>
@@ -299,12 +311,16 @@ export default function Vendas() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* ─── MODAL NOVA VENDA ─── */}
       {modalAberto && (
         <div style={s.overlay} onClick={() => setModalAberto(false)}>
-          <div style={s.modal} onClick={(e) => e.stopPropagation()}>
+          <div
+            style={mobile ? { ...s.modal, padding: "20px 16px" } : s.modal}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div style={s.modalHeader}>
               <h3 style={s.modalTitulo}>Nova Venda</h3>
               <button
@@ -320,13 +336,13 @@ export default function Vendas() {
             <div style={s.secao}>
               <h4 style={s.secaoTitulo}>Produtos</h4>
               {itens.map((item, index) => (
-                <div key={index} style={s.itemRow}>
+                <div key={index} style={mobile ? { ...s.itemRow, ...s.itemRowMobile } : s.itemRow}>
                   <select
                     value={item.productId}
                     onChange={(e) =>
                       atualizarItem(index, "productId", e.target.value)
                     }
-                    style={s.selectProduto}
+                    style={mobile ? { ...s.selectProduto, flexBasis: "100%" } : s.selectProduto}
                   >
                     <option value="">Selecione...</option>
                     {produtos.map((p) => (
@@ -391,7 +407,7 @@ export default function Vendas() {
             {/* ─── PAGAMENTO ─── */}
             <div style={s.secao}>
               <h4 style={s.secaoTitulo}>Pagamento</h4>
-              <div style={s.pagamentoGrid}>
+              <div style={mobile ? { ...s.pagamentoGrid, gridTemplateColumns: "1fr" } : s.pagamentoGrid}>
                 <div style={s.campo}>
                   <label style={s.label}>Forma de pagamento</label>
                   <select
@@ -450,7 +466,7 @@ export default function Vendas() {
                   "A prazo" está selecionado no dropdown acima. */}
               {formaPagamento === "A_PRAZO" && (
                 <div style={s.prazoBox}>
-                  <div style={s.pagamentoGrid}>
+                  <div style={mobile ? { ...s.pagamentoGrid, gridTemplateColumns: "1fr" } : s.pagamentoGrid}>
                     <div style={s.campo}>
                       <label style={s.label}>Nº de parcelas</label>
                       <input
@@ -519,6 +535,11 @@ const s = {
     alignItems: "center",
     marginBottom: "20px",
   },
+  headerMobile: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: "10px",
+  },
   titulo: {
     fontSize: "18px",
     fontWeight: "500",
@@ -549,7 +570,8 @@ const s = {
     border: "0.5px solid var(--color-border-tertiary)",
     overflow: "hidden",
   },
-  tabela: { width: "100%", borderCollapse: "collapse" },
+  tabelaScroll: { overflowX: "auto" },
+  tabela: { width: "100%", minWidth: "760px", borderCollapse: "collapse" },
   thead: { backgroundColor: "var(--color-background-secondary)" },
   th: {
     padding: "12px 16px",
@@ -678,6 +700,7 @@ const s = {
     marginBottom: "8px",
     alignItems: "center",
   },
+  itemRowMobile: { flexWrap: "wrap" },
   selectProduto: {
     flex: 1,
     padding: "9px 12px",

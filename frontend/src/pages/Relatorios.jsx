@@ -103,6 +103,7 @@ export default function Relatorios() {
           ) : (
             <div style={s.tabelaContainer}>
               <h3 style={s.tabelaTitulo}>Detalhamento das Vendas</h3>
+              <div style={s.tabelaScroll}>
               <table style={s.tabela}>
                 <thead>
                   <tr style={s.thead}>
@@ -151,6 +152,7 @@ export default function Relatorios() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
         </>
@@ -270,7 +272,8 @@ const s = {
     color: "var(--color-text-primary)",
     marginBottom: "14px",
   },
-  tabela: { width: "100%", borderCollapse: "collapse" },
+  tabelaScroll: { overflowX: "auto" },
+  tabela: { width: "100%", minWidth: "680px", borderCollapse: "collapse" },
   thead: { backgroundColor: "var(--color-background-secondary)" },
   th: {
     padding: "12px 16px",
