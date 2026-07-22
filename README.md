@@ -4,7 +4,7 @@ Sistema completo de gestão para pequenos comércios, desenvolvido com **Node.js
 
 🔗 **Acesse:** [gestorflow-app.vercel.app](https://gestorflow-app.vercel.app)
 
-🔑 **Demo:** `demo@gestorflow.com` / `demo123`
+🔑 **Demo:** `demo@gestorflow.com` / `demo1234`
 
 ---
 
